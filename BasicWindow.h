@@ -24,6 +24,13 @@
 // other:
 #include "Utils.h"
 #include <ostream>
+// polyvox:
+#include "PolyVoxCore/MaterialDensityPair.h"
+#include "PolyVoxCore/CubicSurfaceExtractorWithNormals.h"
+#include "PolyVoxCore/SurfaceMesh.h"
+#include "PolyVoxCore/SimpleVolume.h"
+#include <PolyVoxCore/LargeVolume.h>
+#include <PolyVoxCore/Material.h>
 
 class BasicWindow : public Ogre::WindowEventListener, public Ogre::FrameListener, public OIS::KeyListener, public OIS::MouseListener {
 public:
@@ -48,7 +55,7 @@ protected:
 	CEGUI::OgreRenderer*     mRenderer;          //<- gui
 	bool                     mSendKeyboardToGUI; //<- send input to gui?
 	bool                     mSendMouseToGUI;    //<- send input to gui?
-	Utils                    mUtils;
+	Utils                    mUtils;             //<- TODO: remove and make Utils all static
 	
 	// WindowEventListener interface:
 	virtual void windowResized(Ogre::RenderWindow* rw);

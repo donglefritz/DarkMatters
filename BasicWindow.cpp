@@ -747,7 +747,6 @@ void addCubeAt(Ogre::ManualObject* mo, Ogre::Vector3& startPosition, float size,
 	index += 4;
 }
 
-
 void randomlyFillVolumeData32(int volData[][32][32], int excludedMax) {
 	Utils utils;
 	int depth = 32;
@@ -831,9 +830,10 @@ void drawVolumeDataToManualObject(Ogre::ManualObject* mo, int volData[][32][32],
 		for (int y=0; y<depth; ++y) {
 			for (int z=0; z<depth; ++z) {
 				if (volData[x][y][z] != 0) {
-					location.x = x * size + startingLocation.x;
-					location.y = y * size + startingLocation.y;
-					location.z = z * size + startingLocation.z;
+					location   = startingLocation;
+					location.x += x * size;
+					location.y += y * size;
+					location.z += z * size;
 					switch (volData[x][y][z]) {
 					case 1:
 						addCubeAt(mo, location, size, red, index);
@@ -859,7 +859,6 @@ void drawVolumeDataToManualObject(Ogre::ManualObject* mo, int volData[][32][32],
 	}
 }
 
-
 bool isMouseOverGUI() {
 	CEGUI::Window* win  = CEGUI::System::getSingleton().getWindowContainingMouse();
 	CEGUI::Window* root = CEGUI::WindowManager::getSingleton().getWindow("root");
@@ -870,6 +869,39 @@ bool isMouseOverGUI() {
 	}
 }
 
+// POLYVOX TESTS:
+
+void createSphereInPolyVoxVolume(PolyVox::SimpleVolume<PolyVox::MaterialDensityPair44>& volData, float fRadius) {
+        //This vector hold the position of the center of the volume
+        PolyVox::Vector3DFloat v3dVolCenter(volData.getWidth() / 2.0f, volData.getHeight() / 2.0f, volData.getDepth()/2.0f);
+
+        //This three-level for loop iterates over every voxel in the volume
+        for (int z = 0; z < volData.getWidth(); z++) {
+                for (int y = 0; y < volData.getHeight(); y++) {
+                        for (int x = 0; x < volData.getDepth(); x++) {
+                                //Store our current position as a vector...
+								PolyVox::Vector3DFloat v3dCurrentPos((float)x, (float)y, (float)z);
+                                //And compute how far the current position is from the center of the volume
+                                float distToCenter = (float)((v3dCurrentPos - v3dVolCenter).length());
+
+                                //If the current voxel is less than 'radius' units from the center then we make it solid.
+                                if(distToCenter <= fRadius) {
+                                        // 8 bit max is 15
+                                        uint8_t density  = 15;
+										uint8_t material = 15;
+
+                                        PolyVox::MaterialDensityPair44 voxel = volData.getVoxelAt(x,y,z);
+
+                                        voxel.setDensity(density);
+										voxel.setMaterial(material);
+
+                                        //Wrte the voxel value into the volume
+                                        volData.setVoxelAt(x, y, z, voxel);
+                                }
+                        }
+                }
+        }
+}
 
 // CONSTRUCTOR / DESTRUCTOR:
 
@@ -949,7 +981,7 @@ bool BasicWindow::go(void) {
 	mSceneMgr = mRoot->createSceneManager("DefaultSceneManager");
 	
 	mCamera   = mSceneMgr->createCamera("mCamera");
-	mCamera->setNearClipDistance(5);
+	mCamera->setNearClipDistance(1);
 	//mCamera->setFarClipDistance(10000);
 
 	mCameraMan = new OgreBites::SdkCameraMan(mCamera);
@@ -1011,12 +1043,14 @@ void BasicWindow::createGUI(void) {
 	CEGUI::Window* rootWindow    = winMgr->createWindow("DefaultWindow", "root");
 	guiSystem->setGUISheet(rootWindow);
 
+	/* not using the gui quite yet:
 	try {
 		rootWindow->addChildWindow(CEGUI::WindowManager::getSingleton().loadWindowLayout("Console.layout"));
 		rootWindow->addChildWindow(CEGUI::WindowManager::getSingleton().loadWindowLayout("RightPanel.layout"));
 	} catch (CEGUI::Exception& e) {
 		OGRE_EXCEPT(Ogre::Exception::ERR_INTERNAL_ERROR, std::string(e.getMessage().c_str()), "Error parsing gui layout");
 	}
+	*/
 
 	/*
 	// "Quit" button:
@@ -1038,94 +1072,27 @@ void BasicWindow::createScene(void) {
 	mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(axesLines);
 	addAxesLines(axesLines, 200);
 
-	Ogre::ColourValue red(1.0f,0,0,1.0f);
-	Ogre::ColourValue green(0,1.0f,0,1.0f);
-	Ogre::ColourValue blue(0,0,1.0f,1.0f);
-	Ogre::ColourValue gray(0.7f,0.7f,0.7f,1.0f);
-	Ogre::ColourValue other(0.3f, 0.2f, 0.6f, 1.0f);
+	// PolyVox test:
 
-	const int depth = 32;
-	float size      = 10.0f;
-
-	int volData[depth][depth][depth];
-	int top[depth][depth][depth];
-	int bot[depth][depth][depth];
-
-	addTopHalfOfSphereToVolumeData32(top, 30);
-	addBottomHalfOfSphereToVolumeData32(bot, 30);
-
-	// TODO: VolumeData class with flip and rotate methods
-
-	//randomlyFillVolumeData32(volData, 6);
-	//addSpheretoVolumeData32(volData, 9);
-	//addTopHalfOfSphereToVolumeData32(volData, 20);
-
-
-
-	Ogre::Vector3 location = Ogre::Vector3::ZERO;	
-	Ogre::ManualObject* mo = mSceneMgr->createManualObject("mo");
-	mo->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
+	//PolyVox::LargeVolume<PolyVox::MaterialDensityPair44> largeVolume(PolyVox::Region(PolyVox::Vector3DInt32(0,0,0), PolyVox::Vector3DInt32(256, 256, 256)));
 	
-	drawVolumeDataToManualObject(mo, top, location);
-
-	
-	/*
-	int index = 0;
-	for (int x=0; x<depth; ++x) {
-		for (int y=0; y<depth; ++y) {
-			for (int z=0; z<depth; ++z) {
-				if (volData[x][y][z] != 0) {
-					location.x = x * size;
-					location.y = y * size;
-					location.z = z * size;
-					switch (volData[x][y][z]) {
-					case 1:
-						addCubeAt(mo, location, size, red, index);
-						break;
-					case 2:
-						addCubeAt(mo, location, size, blue, index);
-						break;
-					case 3:
-						addCubeAt(mo, location, size, green, index);
-						break;
-					case 4:
-						addCubeAt(mo, location, size, gray, index);
-						break;
-					case 5:
-						addCubeAt(mo, location, size, other, index);
-						break;
-					default:
-						break;
-					}
-				}
-			}
-		}
-	}
-	*/
-
-	mo->end();
-
-
-	float scale2 = 10.0f;
-
-
+	// simple volume:
+	PolyVox::SimpleVolume<PolyVox::MaterialDensityPair44> volData(PolyVox::Region(PolyVox::Vector3DInt32(0,0,0), PolyVox::Vector3DInt32(63, 63, 63)));
+	createSphereInPolyVoxVolume(volData, 30);
+	PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal> polyVoxMesh;
+	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::SimpleVolume,PolyVox::MaterialDensityPair44> surfaceExtractor(&volData, volData.getEnclosingRegion(), &polyVoxMesh);
+	surfaceExtractor.execute();
 
 	// add to scene:
-	Ogre::MeshPtr mesh    = mo->convertToMesh("moMesh");
+	Ogre::ManualObject* mo = Utils::polyVoxMeshToOgreObject(mSceneMgr, &polyVoxMesh);
+	mo->convertToMesh("moMesh");
 	Ogre::Entity* entity  = mSceneMgr->createEntity("moMesh");
 	Ogre::SceneNode* node = mSceneMgr->getRootSceneNode()->createChildSceneNode("testNode");
 	node->attachObject(entity);
+	entity->setMaterialName("RotatingCloud");
 
-	node->scale(scale2, scale2, scale2);
 
-	// debug info:
-	std::size_t vertexCount, indexCount;
-	unsigned long* indices;
-	Ogre::Vector3* vertices;
-	Ogre::Vector3 position, scale;
-	Ogre::Quaternion orientation;
-	getMeshInformation(mesh, vertexCount, vertices, indexCount, indices, position, orientation, scale);
-	log("breakpoint here");
+	
 }
 
 
