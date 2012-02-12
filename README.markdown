@@ -1,25 +1,14 @@
 
 -= DarkMatters =-
 
+Requirements:
 
-Markdown tests:
+  * http://www.ogre3d.org/
+  * http://www.cegui.org.uk/wiki/index.php/Main_Page
 
-```ruby
+Movement:
 
-def transmogrify(something)
-  something.upcase
-end
-```
-
-Chapter 4. Electroshock Therapy for Merchildren
-_______________________________________________
-
-
-<h3>A List:</h3>
-* one
-* two
-* three
-* four
-* five
+  * Move with W,S,A,D or arrow keys. 
+  * Hold right mouse to move camera.
 
 
