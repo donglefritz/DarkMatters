@@ -37,7 +37,6 @@ public:
 	BasicWindow(void);
 	virtual ~BasicWindow(void);
 	bool go(void);
-	void log(Ogre::String msg);
 
 protected:
 	Ogre::Root*              mRoot;
@@ -55,7 +54,6 @@ protected:
 	CEGUI::OgreRenderer*     mRenderer;          //<- gui
 	bool                     mSendKeyboardToGUI; //<- send input to gui?
 	bool                     mSendMouseToGUI;    //<- send input to gui?
-	Utils                    mUtils;             //<- TODO: remove and make Utils all static
 	
 	// WindowEventListener interface:
 	virtual void windowResized(Ogre::RenderWindow* rw);
