@@ -1,0 +1,10 @@
+material RotatingCloud {
+  technique {
+    pass {
+      texture_unit texture1 {
+        texture cloud.jpg
+        rotate_anim -0.1
+      }
+    }
+  }
+}

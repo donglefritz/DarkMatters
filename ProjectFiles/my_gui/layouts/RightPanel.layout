@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GUILayout >
+    <Window Type="TaharezLook/FrameWindow" Name="RightPanel" >
+        <Property Name="Text" Value="Objects" />
+        <Property Name="TitlebarFont" Value="DejaVuSans-10" />
+        <Property Name="TitlebarEnabled" Value="True" />
+        <Property Name="UnifiedAreaRect" Value="{{.85,0},{.25,0},{1,0},{.75,0}}" />
+        <Window Type="TaharezLook/Listbox" Name="RightPanel/Display" >
+            <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        </Window>
+    </Window>
+</GUILayout>

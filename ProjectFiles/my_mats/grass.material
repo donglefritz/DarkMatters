@@ -1,0 +1,34 @@
+
+// CG Vertex shader definition:
+vertex_program PlainTexture_VS cg {
+    source GameObjStandard.cg
+    entry_point main_plain_texture_vp
+    profiles vs_1_1
+    
+    default_params {
+        param_named_auto worldViewProj worldviewproj_matrix
+    }
+}
+
+// CG Pixel shader definition:
+fragment_program PlainTexture_PS cg {
+    source GameObjStandard.cg
+    entry_point main_plain_texture_fp
+    profiles ps_1_1
+}
+
+material Grass {
+    technique {
+        pass {
+            vertex_program_ref PlainTexture_VS {
+            }
+            fragment_program_ref PlainTexture_PS {
+            }
+            texture_unit {
+                texture Grass.jpg 2d
+            }
+        }
+    }
+}
+
+    

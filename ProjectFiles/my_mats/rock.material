@@ -1,0 +1,10 @@
+material Rock {
+  technique {
+    pass {
+      texture_unit {
+        texture rock.jpg
+        scroll_anim 0.1 0.1
+      }
+    }
+  }
+}

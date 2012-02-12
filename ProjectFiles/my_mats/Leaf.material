@@ -1,0 +1,9 @@
+material Leaf {
+  technique {
+    pass {
+      texture_unit {
+        texture leaf.png
+      }
+    }
+  }
+}

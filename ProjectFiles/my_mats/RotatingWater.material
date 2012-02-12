@@ -1,0 +1,10 @@
+material RotatingWater {
+  technique {
+    pass {
+      texture_unit texture1 {
+        texture water.jpg
+        rotate_anim 0.1
+      }
+    }
+  }
+}
