@@ -105,6 +105,41 @@ void Utils::createSphereInPolyVoxVolume(PolyVox::SimpleVolume<PolyVox::MaterialD
         }
 }
 
+void Utils::randomlyFillRegionOfPolyVoxVolume(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Vector3DInt32& begin, PolyVox::Vector3DInt32& end, int maxHeight) {
+    PolyVox::Vector3DFloat center(volData.getWidth() / 2.0f, volData.getHeight() / 2.0f, volData.getDepth()/2.0f);
+    for (int z=begin.getZ(); z<end.getZ(); z++) {
+        for (int y=begin.getY(); y<maxHeight; y++) {
+            for (int x=begin.getX(); x<end.getX(); x++) {
+				uint8_t material;
+				
+				if (Utils::randomInt(100) == 1) {
+					material = 15;
+				} else {
+					material = 0;
+				}
+				
+				PolyVox::Material8 voxel = volData.getVoxelAt(x,y,z);
+				voxel.setMaterial(material);
+                volData.setVoxelAt(x, y, z, voxel);
+            }
+        }
+    }
+}
+
+void Utils::infiniteRegionHandler(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region) {
+	///		//This function is being called because part of the data is missing from memory and needs to be supplied. The parameter
+	///		//'volume' provides access to the volume data, and the parameter 'reg' indicates which region of the volume you need fill.	
+	//int maxHeight = 100;
+	//randomlyFillRegionOfPolyVoxVolume(volData, region.getLowerCorner(), region.getUpperCorner(), maxHeight);
+}
+
+void Utils::myDataOverflowHandler(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region) {
+	///		//This function is being called because part of the data is about to be removed from memory. The parameter 'volume' 
+	///		//provides access to the volume data, and the parameter 'reg' indicates which region of the volume you need to store.
+}
+
+
+
 void Utils::addAxesLines(Ogre::SceneManager* mSceneMgr, float length) {	
 	Ogre::ManualObject* mo = mSceneMgr->createManualObject("axesLines");
 	mo->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);

@@ -112,8 +112,8 @@ bool BasicWindow::go(void) {
 
 	Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
 	mRoot->addFrameListener(this);
-    mMouse->setEventCallback(this);
-    mKeyboard->setEventCallback(this);
+	mMouse->setEventCallback(this);
+	mKeyboard->setEventCallback(this);
 
 	// 9. start the render loop
 
@@ -162,27 +162,69 @@ void BasicWindow::createGUI(void) {
 }
 
 void BasicWindow::createScene(void) {
-	mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f,1.0f,1.0f));
+	//mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f,1.0f,1.0f));
+	mSceneMgr->setAmbientLight(Ogre::ColourValue(0,0,0,0));
 
-	Utils::addAxesLines(mSceneMgr, 200);
+	Ogre::Light* cameraLight = mSceneMgr->createLight("cameraLight");
+	mCameraNode->attachObject(cameraLight);
+	cameraLight->setType(Ogre::Light::LT_SPOTLIGHT);
+	cameraLight->setDiffuseColour(Ogre::ColourValue::Red);
+	cameraLight->setSpecularColour(Ogre::ColourValue::Blue);
+	cameraLight->setSpotlightRange(Ogre::Degree(35), Ogre::Degree(50));
+
+	Utils::addAxesLines(mSceneMgr, 50);
 
 	//PolyVox::LargeVolume<PolyVox::MaterialDensityPair44> largeVolume(PolyVox::Region(PolyVox::Vector3DInt32(0,0,0), PolyVox::Vector3DInt32(256, 256, 256)));
 	
-	// simple volume:
+	// create simple volume:
 	PolyVox::SimpleVolume<PolyVox::MaterialDensityPair44> volData(PolyVox::Region(PolyVox::Vector3DInt32(0,0,0), PolyVox::Vector3DInt32(63, 63, 63)));
 	Utils::createSphereInPolyVoxVolume(volData, 30);
 	PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal> polyVoxMesh;
 	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::SimpleVolume,PolyVox::MaterialDensityPair44> surfaceExtractor(&volData, volData.getEnclosingRegion(), &polyVoxMesh);
 	surfaceExtractor.execute();
 
-	// add to scene:
+	// add simple volume to scene:
 	Ogre::ManualObject* mo = Utils::polyVoxMeshToOgreObject(mSceneMgr, &polyVoxMesh);
 	mo->convertToMesh("moMesh");
 	Ogre::Entity* entity  = mSceneMgr->createEntity("moMesh");
 	Ogre::SceneNode* node = mSceneMgr->getRootSceneNode()->createChildSceneNode("testNode");
+	node->translate(1, 200, 1);
 	node->attachObject(entity);
 	entity->setMaterialName("RotatingCloud");
+
+
+
+
+	// create large volume:
+	PolyVox::Vector3DInt32 size(255, 255, 255);
+	PolyVox::Vector3DInt32 begin(0, 0, 0);
+	PolyVox::Vector3DInt32 end(32, 32, 32);
+	PolyVox::Region viewable(begin, end);
+	PolyVox::LargeVolume<PolyVox::Material8> largeVolData(PolyVox::Region(begin, size));
 	
+	//uint32_t cubedMaxInMemory = 128;
+	//largeVolData.setMaxNumberOfBlocksInMemory(cubedMaxInMemory*cubedMaxInMemory*cubedMaxInMemory);
+	
+	
+	PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal> largePolyMesh;
+	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::LargeVolume, PolyVox::Material8> largeExtractor(&largeVolData, viewable, &largePolyMesh);
+
+	int maxHeight = 100;
+	Utils::randomlyFillRegionOfPolyVoxVolume(largeVolData, begin, end, maxHeight);
+	largeExtractor.execute();
+
+	// add viewable chunk of large volume to scene:
+	Ogre::ManualObject* largeMo = Utils::polyVoxMeshToOgreObject(mSceneMgr, &largePolyMesh);
+	Ogre::MeshPtr largeMoMesh  = largeMo->convertToMesh("largeMoMesh");
+	Ogre::Entity* largeEntity  = mSceneMgr->createEntity("largeMoMesh");
+	Ogre::SceneNode* largeNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("largeNode");
+	largeNode->attachObject(largeEntity);
+	largeEntity->setMaterialName("Rock");
+	
+	// save mesh to file:
+    Ogre::MeshSerializer meshSerializer;
+    meshSerializer.exportMesh(largeMoMesh.getPointer(), "largeMo.mesh");
+
 }
 
 // CALLBACKS:
@@ -196,6 +238,13 @@ bool BasicWindow::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	mCameraMan->frameRenderingQueued(evt);
 
 	CEGUI::System::getSingleton().injectTimePulse(evt.timeSinceLastFrame);
+
+	// get camera position
+	Ogre::Light* cameraLight = mSceneMgr->getLight("cameraLight");
+	cameraLight->setPosition(mCamera->getPosition());
+	cameraLight->setDirection(mCamera->getDirection());
+
+	
 
 	return true;
 }

@@ -18,7 +18,8 @@
 #include "PolyVoxCore/SimpleVolume.h"
 #include <PolyVoxCore/MeshDecimator.h>
 #include <PolyVoxCore/CubicSurfaceExtractor.h>
-
+#include <PolyVoxCore/LargeVolume.h>
+#include <PolyVoxCore/Material.h>
 
 class Utils {
 private:
@@ -39,6 +40,11 @@ public:
 	static void createSphereInPolyVoxVolume(PolyVox::SimpleVolume<PolyVox::MaterialDensityPair44>& volData, float radius);
 	static bool isMouseOverGUI(void);
 	static void addAxesLines(Ogre::SceneManager* mSceneMgr, float length);
+
+	static void randomlyFillRegionOfPolyVoxVolume(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Vector3DInt32& begin, PolyVox::Vector3DInt32& end, int maxHeight);
+
+	static void infiniteRegionHandler(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
+	static void myDataOverflowHandler(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
 
     /* USAGE EXAMPLE:
 	 * Ogre::MeshPtr mesh = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE)->getMesh();
