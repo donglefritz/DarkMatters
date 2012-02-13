@@ -107,17 +107,10 @@ void Utils::createSphereInPolyVoxVolume(PolyVox::SimpleVolume<PolyVox::MaterialD
 
 void Utils::randomlyFillRegionOfPolyVoxVolume(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Vector3DInt32& begin, PolyVox::Vector3DInt32& end, int maxHeight) {
     PolyVox::Vector3DFloat center(volData.getWidth() / 2.0f, volData.getHeight() / 2.0f, volData.getDepth()/2.0f);
-    for (int z=begin.getZ(); z<end.getZ(); z++) {
-        for (int y=begin.getY(); y<maxHeight; y++) {
-            for (int x=begin.getX(); x<end.getX(); x++) {
-				uint8_t material;
-				
-				if (Utils::randomInt(100) == 1) {
-					material = 15;
-				} else {
-					material = 0;
-				}
-				
+    for (int x=begin.getX(); x<end.getX(); x++) {
+		for (int z=begin.getZ(); z<end.getZ(); z++) {
+			for (int y=Utils::randomInt(maxHeight)+1; y>0; --y) {
+				uint8_t material = 15;		
 				PolyVox::Material8 voxel = volData.getVoxelAt(x,y,z);
 				voxel.setMaterial(material);
                 volData.setVoxelAt(x, y, z, voxel);

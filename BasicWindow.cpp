@@ -1,5 +1,46 @@
 #include "BasicWindow.h"
 
+// TEST:
+
+void load(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volume, const PolyVox::Region& reg) {
+	std::stringstream ss;
+	ss << "VOLDATA: loading region: " << reg.getLowerCorner() << " -> " << reg.getUpperCorner();
+	Utils::log(ss.str());
+	Perlin perlin(2,2,1,234);
+	for(int x=reg.getLowerCorner().getX(); x<=reg.getUpperCorner().getX(); x++)	{
+		for(int y=reg.getLowerCorner().getY(); y<=reg.getUpperCorner().getY(); y++)	{
+			float perlinVal = perlin.Get(x / static_cast<float>(255-1), y / static_cast<float>(255-1));
+			perlinVal += 1.0f;
+			perlinVal *= 0.5f;
+			perlinVal *= 255;
+			for(int z = reg.getLowerCorner().getZ(); z <= reg.getUpperCorner().getZ(); z++) {
+				PolyVox::Material8 voxel;
+				if(z < perlinVal) {
+					const int xpos = 50;
+					const int zpos = 100;
+					if((x-xpos)*(x-xpos) + (z-zpos)*(z-zpos) < 200) {
+						// tunnel
+						voxel.setMaterial(0);
+					} else {
+						// solid
+						voxel.setMaterial(15);
+					}
+				} else {
+					voxel.setMaterial(0);
+				}
+				volume.setVoxelAt(x, y, z, voxel);
+			}
+		}
+	}
+}
+
+void unload(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volume, const PolyVox::Region& reg) {
+	std::stringstream ss;
+	ss << "VOLDATA: unloading region: " << reg.getLowerCorner() << " -> " << reg.getUpperCorner();
+	Utils::log(ss.str());
+}
+
+
 // CONSTRUCTOR / DESTRUCTOR:
 
 BasicWindow::BasicWindow(void) :
@@ -162,8 +203,8 @@ void BasicWindow::createGUI(void) {
 }
 
 void BasicWindow::createScene(void) {
-	//mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f,1.0f,1.0f));
-	mSceneMgr->setAmbientLight(Ogre::ColourValue(0,0,0,0));
+	mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f,1.0f,1.0f));
+	//mSceneMgr->setAmbientLight(Ogre::ColourValue(0,0,0,0));
 
 	Ogre::Light* cameraLight = mSceneMgr->createLight("cameraLight");
 	mCameraNode->attachObject(cameraLight);
@@ -174,8 +215,73 @@ void BasicWindow::createScene(void) {
 
 	Utils::addAxesLines(mSceneMgr, 50);
 
-	//PolyVox::LargeVolume<PolyVox::MaterialDensityPair44> largeVolume(PolyVox::Region(PolyVox::Vector3DInt32(0,0,0), PolyVox::Vector3DInt32(256, 256, 256)));
-	
+
+
+	// POLYVOX:
+
+	// create large volume:
+	PolyVox::LargeVolume<PolyVox::Material8> volData(&load, &unload, 256);
+	volData.setMaxNumberOfBlocksInMemory(4096);
+	volData.setMaxNumberOfUncompressedBlocks(64);
+
+
+	// testing the volume:
+	/*
+	ss << "DEBUG: Memory usage: " << (volData.calculateSizeInBytes()/1024.0/1024.0) << "MB" << std::endl;
+	ss << "DEBUG: Compression ratio: 1 to " << (1.0/(volData.calculateCompressionRatio())) << std::endl;
+
+	// prefetch:
+	PolyVox::Region reg(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(255,255,255));
+	ss << "DEBUG: Prefetching region: " << reg.getLowerCorner() << " -> " << reg.getUpperCorner() << std::endl;
+	volData.prefetch(reg);
+	ss << "DEBUG: Memory usage: " << (volData.calculateSizeInBytes()/1024.0/1024.0) << "MB" << std::endl;
+	ss << "DEBUG: Compression ratio: 1 to " << (1.0/(volData.calculateCompressionRatio())) << std::endl;
+
+	// flush region:
+	PolyVox::Region reg2(PolyVox::Vector3DInt32(0,0,0), PolyVox::Vector3DInt32(255,255,255));
+	ss << "DEBUG: Flushing region: " << reg2.getLowerCorner() << " -> " << reg2.getUpperCorner() << std::endl;
+	volData.flush(reg2);
+	ss << "DEBUG: Memory usage: " << (volData.calculateSizeInBytes()/1024.0/1024.0) << "MB" << std::endl;
+	ss << "DEBUG: Compression ratio: 1 to " << (1.0/(volData.calculateCompressionRatio())) << std::endl;
+
+	// flush entire volume:
+	ss << "DEBUG: Flushing entire volume" << std::endl;
+	volData.flushAll();
+	ss << "DEBUG: Memory usage: " << (volData.calculateSizeInBytes()/1024.0/1024.0) << "MB" << std::endl;
+	ss << "DEBUG: Compression ratio: 1 to " << (1.0/(volData.calculateCompressionRatio())) << std::endl;
+	*/
+
+	// extract the surface
+
+	PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal> mesh;
+
+	// WTF POLYVOX???????????????????????????????
+	// WORKS: PolyVox::Region reg(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(255,255,255));
+	// PUKES: PolyVox::Region reg(PolyVox::Vector3DInt32(1,1,1), PolyVox::Vector3DInt32(31,31,31));
+
+	PolyVox::Region reg(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(255,255,255));
+	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::LargeVolume,PolyVox::Material8> surfaceExtractor(&volData, reg, &mesh);
+	surfaceExtractor.execute();
+
+	std::stringstream ss;
+	ss << "DEBUG: # vertices in extracted mesh: " << mesh.getNoOfVertices();
+	Utils::log(ss.str());
+
+	// OGRE:
+	Utils::polyVoxMeshToOgreObject(mSceneMgr, &mesh)->convertToMesh("volDataMesh");
+	Ogre::Entity* entity  = mSceneMgr->createEntity("volDataMesh");
+	Ogre::SceneNode* node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+	node->attachObject(entity);
+	entity->setMaterialName("Leaf");
+	node->scale(10, 10, 10);
+	// save mesh to file:
+    //Ogre::MeshSerializer meshSerializer;
+    //meshSerializer.exportMesh(largeMoMesh.getPointer(), "largePerlinNoise.mesh");
+
+
+	// OLD TESTS:
+
+	/*
 	// create simple volume:
 	PolyVox::SimpleVolume<PolyVox::MaterialDensityPair44> volData(PolyVox::Region(PolyVox::Vector3DInt32(0,0,0), PolyVox::Vector3DInt32(63, 63, 63)));
 	Utils::createSphereInPolyVoxVolume(volData, 30);
@@ -192,25 +298,20 @@ void BasicWindow::createScene(void) {
 	node->attachObject(entity);
 	entity->setMaterialName("RotatingCloud");
 
-
-
-
 	// create large volume:
-	PolyVox::Vector3DInt32 size(255, 255, 255);
+	PolyVox::Vector3DInt32 size(128, 8, 128);
 	PolyVox::Vector3DInt32 begin(0, 0, 0);
-	PolyVox::Vector3DInt32 end(32, 32, 32);
+	PolyVox::Vector3DInt32 end(128, 8, 128);
 	PolyVox::Region viewable(begin, end);
 	PolyVox::LargeVolume<PolyVox::Material8> largeVolData(PolyVox::Region(begin, size));
-	
-	//uint32_t cubedMaxInMemory = 128;
-	//largeVolData.setMaxNumberOfBlocksInMemory(cubedMaxInMemory*cubedMaxInMemory*cubedMaxInMemory);
-	
-	
 	PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal> largePolyMesh;
-	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::LargeVolume, PolyVox::Material8> largeExtractor(&largeVolData, viewable, &largePolyMesh);
+	
+	uint32_t cubedMaxInMemory = 255;
+	largeVolData.setMaxNumberOfBlocksInMemory(cubedMaxInMemory*cubedMaxInMemory*cubedMaxInMemory);
 
-	int maxHeight = 100;
+	int maxHeight = 8;
 	Utils::randomlyFillRegionOfPolyVoxVolume(largeVolData, begin, end, maxHeight);
+	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::LargeVolume,PolyVox::Material8> largeExtractor(&largeVolData, viewable, &largePolyMesh);
 	largeExtractor.execute();
 
 	// add viewable chunk of large volume to scene:
@@ -219,15 +320,17 @@ void BasicWindow::createScene(void) {
 	Ogre::Entity* largeEntity  = mSceneMgr->createEntity("largeMoMesh");
 	Ogre::SceneNode* largeNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("largeNode");
 	largeNode->attachObject(largeEntity);
-	largeEntity->setMaterialName("Rock");
-	
-	// save mesh to file:
-    Ogre::MeshSerializer meshSerializer;
-    meshSerializer.exportMesh(largeMoMesh.getPointer(), "largeMo.mesh");
+	largeEntity->setMaterialName("Leaf");
+	largeNode->scale(10, 1, 10);
+	*/
 
 }
 
 // CALLBACKS:
+
+
+
+
 
 bool BasicWindow::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	if (mWindow->isClosed() || mShutDown) { return false; }

@@ -23,6 +23,7 @@
 #include <RendererModules/Ogre/CEGUIOgreRenderer.h>
 // other:
 #include "Utils.h"
+#include "Perlin.h"
 #include <ostream>
 // polyvox:
 #include "PolyVoxCore/MaterialDensityPair.h"

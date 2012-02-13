@@ -65,11 +65,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BasicWindow.h" />
+    <ClInclude Include="Perlin.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicWindow.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Perlin.cpp" />
     <ClCompile Include="ProjectFiles\old_code_examples.cpp" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
