@@ -17,14 +17,15 @@ public:
 
 
 protected:
-	// Ogre:
+	uint16_t mChunkSize;
+	PolyVox::LargeVolume<PolyVox::Material8>* mWorldData;
+	PolyVox::Vector3DInt32 mViewableBoundary;
+
 	virtual void createScene(void);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+	virtual void extractRegionToOgreMesh(PolyVox::Region& region, Ogre::String meshName);
+	virtual void polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh,Ogre::ManualObject* mo);
 
-	// PolyVox:
-	uint16_t mWorldDepth;
-	PolyVox::LargeVolume<PolyVox::Material8>* mWorldData;
-	
 	// These must be static to retain callback context (or something like that :)
 	static void loadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
 	static void unloadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);

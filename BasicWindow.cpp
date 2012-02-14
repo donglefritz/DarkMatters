@@ -335,6 +335,9 @@ bool BasicWindow::keyPressed(const OIS::KeyEvent& evt) {
 	case OIS::KC_SYSRQ:
 		mWindow->writeContentsToTimestampedFile("screenshot", ".jpg");
 		break;
+	case OIS::KC_HOME:
+		mCamera->setPosition(Ogre::Vector3(0,0,5));
+		break;
 	// TODO: catch and send slash commands to GUI console
 	// TODO: handle Enter key (submit current action to gui, ex: slash commands)
 	default:

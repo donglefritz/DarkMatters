@@ -30,23 +30,14 @@ public:
 	static bool  randomBool(void);
 	static float randomFloat(void);
 	static int   randomInt(int excludedMax);
-
 	static float distanceBetween(Ogre::Vector3 p1, Ogre::Vector3 p2);
 	static float distanceBetween(int p1_x, int p1_y, int p1_z, int p2_x, int p2_y, int p2_z);
 
 	static void log(Ogre::String msg);
 
-	static void polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh,Ogre::ManualObject* mo);
 	static void createSphereInPolyVoxVolume(PolyVox::SimpleVolume<PolyVox::MaterialDensityPair44>& volData, float radius);
 
 	static void randomlyFillRegionOfPolyVoxVolume(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Vector3DInt32& begin, PolyVox::Vector3DInt32& end, int maxHeight);
-
-	static void fillRegion(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Region& region);
-
-	/*
-	static void extractMeshFromRegion(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh);
-	*/
-
 
     /* USAGE EXAMPLE:
 	 * Ogre::MeshPtr mesh = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE)->getMesh();

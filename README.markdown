@@ -14,5 +14,6 @@ Controls:
   * Lift click to assign keyboard to/from a gui window.
   * Hold SHIFT to move fast.
   * Press ESCAPE to quit.
-
+  * Press HOME to get put near 0,0,0 (in case you get lost)
+  * Press PRINTSCREEN/SYSRQ to take a screenshot
 
