@@ -1,6 +1,44 @@
 
 /*
 
+void load(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volume, const PolyVox::Region& reg) {
+	std::stringstream ss;
+	ss << "VOLDATA: loading region: " << reg.getLowerCorner() << " -> " << reg.getUpperCorner();
+	Utils::log(ss.str());
+	Perlin perlin(2,2,1,234);
+	for(int x=reg.getLowerCorner().getX(); x<=reg.getUpperCorner().getX(); x++)	{
+		for(int y=reg.getLowerCorner().getY(); y<=reg.getUpperCorner().getY(); y++)	{
+			float perlinVal = perlin.Get(x / static_cast<float>(255-1), y / static_cast<float>(255-1));
+			perlinVal += 1.0f;
+			perlinVal *= 0.5f;
+			perlinVal *= 255;
+			for(int z = reg.getLowerCorner().getZ(); z <= reg.getUpperCorner().getZ(); z++) {
+				PolyVox::Material8 voxel;
+				if(z < perlinVal) {
+					const int xpos = 50;
+					const int zpos = 100;
+					if((x-xpos)*(x-xpos) + (z-zpos)*(z-zpos) < 200) {
+						// tunnel
+						voxel.setMaterial(0);
+					} else {
+						// solid
+						voxel.setMaterial(15);
+					}
+				} else {
+					voxel.setMaterial(0);
+				}
+				volume.setVoxelAt(x, y, z, voxel);
+			}
+		}
+	}
+}
+
+void unload(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volume, const PolyVox::Region& reg) {
+	std::stringstream ss;
+	ss << "VOLDATA: unloading region: " << reg.getLowerCorner() << " -> " << reg.getUpperCorner();
+	Utils::log(ss.str());
+}
+
 
 void addQuadTopAt(Ogre::ManualObject* mo, Ogre::Vector3& startPosition, float size, Ogre::ColourValue& color) {
 	Ogre::Vector3 loc;

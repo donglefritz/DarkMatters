@@ -1,46 +1,5 @@
 #include "BasicWindow.h"
 
-// TEST:
-
-void load(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volume, const PolyVox::Region& reg) {
-	std::stringstream ss;
-	ss << "VOLDATA: loading region: " << reg.getLowerCorner() << " -> " << reg.getUpperCorner();
-	Utils::log(ss.str());
-	Perlin perlin(2,2,1,234);
-	for(int x=reg.getLowerCorner().getX(); x<=reg.getUpperCorner().getX(); x++)	{
-		for(int y=reg.getLowerCorner().getY(); y<=reg.getUpperCorner().getY(); y++)	{
-			float perlinVal = perlin.Get(x / static_cast<float>(255-1), y / static_cast<float>(255-1));
-			perlinVal += 1.0f;
-			perlinVal *= 0.5f;
-			perlinVal *= 255;
-			for(int z = reg.getLowerCorner().getZ(); z <= reg.getUpperCorner().getZ(); z++) {
-				PolyVox::Material8 voxel;
-				if(z < perlinVal) {
-					const int xpos = 50;
-					const int zpos = 100;
-					if((x-xpos)*(x-xpos) + (z-zpos)*(z-zpos) < 200) {
-						// tunnel
-						voxel.setMaterial(0);
-					} else {
-						// solid
-						voxel.setMaterial(15);
-					}
-				} else {
-					voxel.setMaterial(0);
-				}
-				volume.setVoxelAt(x, y, z, voxel);
-			}
-		}
-	}
-}
-
-void unload(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volume, const PolyVox::Region& reg) {
-	std::stringstream ss;
-	ss << "VOLDATA: unloading region: " << reg.getLowerCorner() << " -> " << reg.getUpperCorner();
-	Utils::log(ss.str());
-}
-
-
 // CONSTRUCTOR / DESTRUCTOR:
 
 BasicWindow::BasicWindow(void) :
@@ -203,8 +162,9 @@ void BasicWindow::createGUI(void) {
 }
 
 void BasicWindow::createScene(void) {
+	/*
 	// center marker:
-	Utils::addAxesLines(mSceneMgr, 50);
+	addAxesLines(50);
 
 	// lights:
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f,1.0f,1.0f));
@@ -216,15 +176,13 @@ void BasicWindow::createScene(void) {
 	cameraLight->setSpotlightRange(Ogre::Degree(35), Ogre::Degree(50));
 
 	// PolyVox:
-	int size = 32;
-	int view = 8;
-	PolyVox::Region region(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(view, view, view));
-	PolyVox::LargeVolume<PolyVox::Material8> volData(&Utils::loadRegion, &Utils::unloadRegion, size);
+	PolyVox::Region exampleRegion(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(32,32,32));
+	PolyVox::LargeVolume<PolyVox::Material8> volData(&Utils::loadRegion, &Utils::unloadRegion, 64);
 	volData.setMaxNumberOfBlocksInMemory(4096);
-	volData.setMaxNumberOfUncompressedBlocks(64);
-	Utils::fillRegion(volData, region);
+	volData.setMaxNumberOfUncompressedBlocks(32);
 
-	PolyVox::Material8 voxel = volData.getVoxelAt(0,0,0);
+	PolyVox::Region region(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(28,28,28));
+
 	
 	PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal> mesh;
 	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::LargeVolume,PolyVox::Material8> surfaceExtractor(&volData, region, &mesh);
@@ -237,9 +195,9 @@ void BasicWindow::createScene(void) {
 	Ogre::Entity* entity   = mSceneMgr->createEntity("volDataMesh");
 	Ogre::SceneNode* node  = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	node->attachObject(entity);
-	entity->setMaterialName("Skull");
+	entity->setMaterialName("BlackBorder");
 	//node->scale(10, 10, 10);
-
+	*/
 
 
 	// testing the volume:
@@ -299,14 +257,17 @@ void BasicWindow::createScene(void) {
 	surfaceExtractor.execute();
 
 	// add simple volume to scene:
-	Ogre::ManualObject* mo = Utils::polyVoxMeshToOgreObject(mSceneMgr, &polyVoxMesh);
+	Ogre::ManualObject* mo = mSceneMgr->createManualObject();
+	Utils::polyVoxMeshToOgreObject(&polyVoxMesh, mo);
 	mo->convertToMesh("moMesh");
 	Ogre::Entity* entity  = mSceneMgr->createEntity("moMesh");
 	Ogre::SceneNode* node = mSceneMgr->getRootSceneNode()->createChildSceneNode("testNode");
 	node->translate(1, 200, 1);
 	node->attachObject(entity);
-	entity->setMaterialName("RotatingCloud");
-
+	entity->setMaterialName("BlackBorder");
+	*/
+	
+	/*
 	// create large volume:
 	PolyVox::Vector3DInt32 size(128, 8, 128);
 	PolyVox::Vector3DInt32 begin(0, 0, 0);
@@ -339,21 +300,10 @@ void BasicWindow::createScene(void) {
 
 bool BasicWindow::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	if (mWindow->isClosed() || mShutDown) { return false; }
-	
 	mKeyboard->capture();
 	mMouse->capture();
-		
 	mCameraMan->frameRenderingQueued(evt);
-
 	CEGUI::System::getSingleton().injectTimePulse(evt.timeSinceLastFrame);
-
-	// get camera position
-	Ogre::Light* cameraLight = mSceneMgr->getLight("cameraLight");
-	cameraLight->setPosition(mCamera->getPosition());
-	cameraLight->setDirection(mCamera->getDirection());
-
-	
-
 	return true;
 }
 
@@ -423,8 +373,8 @@ bool BasicWindow::mousePressed(const OIS::MouseEvent& evt, OIS::MouseButtonID id
 	if (id == OIS::MB_Right) {
 		mSendMouseToGUI = false;
 	} else {
-		CEGUI::System::getSingleton().injectMouseButtonDown(Utils::convertMouseButton(id));
-		if (Utils::isMouseOverGUI()) {
+		CEGUI::System::getSingleton().injectMouseButtonDown(convertMouseButton(id));
+		if (isMouseOverGUI()) {
 			mSendKeyboardToGUI = true;
 		} else {
 			mSendKeyboardToGUI = false;
@@ -437,7 +387,7 @@ bool BasicWindow::mouseReleased(const OIS::MouseEvent& evt, OIS::MouseButtonID i
 	if (id == OIS::MB_Right) {
 		mSendMouseToGUI = true;
 	} else {
-		CEGUI::System::getSingleton().injectMouseButtonUp(Utils::convertMouseButton(id));
+		CEGUI::System::getSingleton().injectMouseButtonUp(convertMouseButton(id));
 	}
 	return true;
 }
@@ -445,4 +395,54 @@ bool BasicWindow::mouseReleased(const OIS::MouseEvent& evt, OIS::MouseButtonID i
 bool BasicWindow::quit(const CEGUI::EventArgs& evt) {
 	mShutDown = true;
 	return true;
+}
+
+// HELPERS:
+
+CEGUI::MouseButton BasicWindow::convertMouseButton(OIS::MouseButtonID id) {
+	switch(id) {
+	case OIS::MB_Left:
+		return CEGUI::LeftButton;
+	case OIS::MB_Right:
+		return CEGUI::RightButton;
+	case OIS::MB_Middle:
+		return CEGUI::MiddleButton;
+	default:
+		return CEGUI::LeftButton;
+	}
+}
+
+bool BasicWindow::isMouseOverGUI(void) {
+	CEGUI::Window* win  = CEGUI::System::getSingleton().getWindowContainingMouse();
+	CEGUI::Window* root = CEGUI::WindowManager::getSingleton().getWindow("root");
+	if (win == NULL || win == root)  {
+		return false;
+	} else {
+		return true;
+	}
+}
+
+void BasicWindow::addAxesLines(float length) {	
+	Ogre::ManualObject* mo = mSceneMgr->createManualObject("axesLines");
+	mo->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+	mo->position(-length,0,0);				   //<- 0
+	mo->colour(Ogre::ColourValue::Red);
+	mo->position(length,0,0);                  //<- 1
+	mo->colour(Ogre::ColourValue::Red);
+	mo->position(0,-length,0);                 //<- 2
+	mo->colour(Ogre::ColourValue::Green);
+	mo->position(0,length,0);                  //<- 3
+	mo->colour(Ogre::ColourValue::Green);
+	mo->position(0,0,-length);                 //<- 4
+	mo->colour(Ogre::ColourValue::Blue);   
+	mo->position(0,0,length);                  //<- 5
+	mo->colour(Ogre::ColourValue::Blue);
+	mo->index(0);
+	mo->index(1);
+	mo->index(2);
+	mo->index(3);
+	mo->index(4);
+	mo->index(5);
+	mo->end();
+	mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(mo);
 }

@@ -112,30 +112,10 @@ void Utils::fillRegion(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVo
 	std::stringstream ss;
 	ss << "Info: fillRegion() is filling region: " << region.getLowerCorner() << " -> " << region.getUpperCorner();
 	Utils::log(ss.str());
+	uint8_t material = 2;
 	for (int x=region.getLowerCorner().getX(); x<region.getUpperCorner().getX(); x++) {
 		for (int y=region.getLowerCorner().getY(); y<region.getUpperCorner().getY(); ++y) {
 			for (int z=region.getLowerCorner().getZ(); z<region.getUpperCorner().getZ(); z++) {
-				uint8_t material = 2;		
-				PolyVox::Material8 voxel = volData.getVoxelAt(x,y,z);
-				voxel.setMaterial(material);
-                volData.setVoxelAt(x,y,z, voxel);
-            }
-        }
-    }
-	PolyVox::Material8 voxel = volData.getVoxelAt(0,0,0);
-	uint8_t material = voxel.getMaterial();
-}
-
-void Utils::loadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region) {
-	///		//This function is being called because part of the data is missing from memory and needs to be supplied. The parameter
-	///		//'volume' provides access to the volume data, and the parameter 'reg' indicates which region of the volume you need fill.	
-	std::stringstream ss;
-	ss << "Info: loadRegion() is loading region: " << region.getLowerCorner() << " -> " << region.getUpperCorner();
-	Utils::log(ss.str());
-	for (int x=region.getLowerCorner().getX(); x<region.getUpperCorner().getX(); x++) {
-		for (int y=region.getLowerCorner().getY(); y<region.getUpperCorner().getY(); ++y) {
-			for (int z=region.getLowerCorner().getZ(); z<region.getUpperCorner().getZ(); z++) {
-				uint8_t material = 2;		
 				if (Utils::randomBool()) {
 					PolyVox::Material8 voxel = volData.getVoxelAt(x,y,z);
 					voxel.setMaterial(material);
@@ -146,63 +126,24 @@ void Utils::loadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volD
     }
 }
 
-void Utils::unloadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region) {
-	///		//This function is being called because part of the data is about to be removed from memory. The parameter 'volume' 
-	///		//provides access to the volume data, and the parameter 'reg' indicates which region of the volume you need to store.
-	std::stringstream ss;
-	ss << "Info: unloadRegion() is unloading region: " << region.getLowerCorner() << " -> " << region.getUpperCorner();
-	Utils::log(ss.str());
-}
+
+/*
+void Utils::extractMeshFromRegion(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh) {
+	mesh->clear();
+	for(int32_t z = m_regSizeInVoxels.getLowerCorner().getZ(); z < m_regSizeInVoxels.getUpperCorner().getZ(); z++) {
+		for(int32_t y = m_regSizeInVoxels.getLowerCorner().getY(); y < m_regSizeInVoxels.getUpperCorner().getY(); y++) {
+			for(int32_t x = m_regSizeInVoxels.getLowerCorner().getX(); x < m_regSizeInVoxels.getUpperCorner().getX(); x++) {
 
 
 
-void Utils::addAxesLines(Ogre::SceneManager* mSceneMgr, float length) {	
-	Ogre::ManualObject* mo = mSceneMgr->createManualObject("axesLines");
-	mo->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
-	mo->position(-length,0,0);				   //<- 0
-	mo->colour(Ogre::ColourValue::Red);
-	mo->position(length,0,0);                  //<- 1
-	mo->colour(Ogre::ColourValue::Red);
-	mo->position(0,-length,0);                 //<- 2
-	mo->colour(Ogre::ColourValue::Green);
-	mo->position(0,length,0);                  //<- 3
-	mo->colour(Ogre::ColourValue::Green);
-	mo->position(0,0,-length);                 //<- 4
-	mo->colour(Ogre::ColourValue::Blue);   
-	mo->position(0,0,length);                  //<- 5
-	mo->colour(Ogre::ColourValue::Blue);
-	mo->index(0);
-	mo->index(1);
-	mo->index(2);
-	mo->index(3);
-	mo->index(4);
-	mo->index(5);
-	mo->end();
-	mSceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(mo);
-}
-
-CEGUI::MouseButton Utils::convertMouseButton(OIS::MouseButtonID id) {
-	switch(id) {
-	case OIS::MB_Left:
-		return CEGUI::LeftButton;
-	case OIS::MB_Right:
-		return CEGUI::RightButton;
-	case OIS::MB_Middle:
-		return CEGUI::MiddleButton;
-	default:
-		return CEGUI::LeftButton;
+			}
+		}
 	}
 }
+*/
 
-bool Utils::isMouseOverGUI(void) {
-	CEGUI::Window* win  = CEGUI::System::getSingleton().getWindowContainingMouse();
-	CEGUI::Window* root = CEGUI::WindowManager::getSingleton().getWindow("root");
-	if (win == NULL || win == root)  {
-		return false;
-	} else {
-		return true;
-	}
-}
+
+
 
 void Utils::getMeshInformation(Ogre::MeshPtr mesh,
                         size_t &vertex_count,

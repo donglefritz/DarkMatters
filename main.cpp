@@ -1,5 +1,5 @@
 
-#include "BasicWindow.h"
+#include "World.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -15,8 +15,7 @@ extern "C" {
 #else
 	int main(int argc, char* argv[]) {
 #endif
-		// create app:
-		BasicWindow app;
+		World app;
 		try {
 			app.go();
 		} catch(Ogre::Exception& e) {

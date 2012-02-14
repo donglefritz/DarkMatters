@@ -67,6 +67,7 @@
     <ClInclude Include="BasicWindow.h" />
     <ClInclude Include="Perlin.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BasicWindow.cpp" />
@@ -74,6 +75,7 @@
     <ClCompile Include="Perlin.cpp" />
     <ClCompile Include="ProjectFiles\old_code_examples.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="World.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -35,17 +35,18 @@ public:
 	static float distanceBetween(int p1_x, int p1_y, int p1_z, int p2_x, int p2_y, int p2_z);
 
 	static void log(Ogre::String msg);
-	static CEGUI::MouseButton convertMouseButton(OIS::MouseButtonID id);
+
 	static void polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh,Ogre::ManualObject* mo);
 	static void createSphereInPolyVoxVolume(PolyVox::SimpleVolume<PolyVox::MaterialDensityPair44>& volData, float radius);
-	static bool isMouseOverGUI(void);
-	static void addAxesLines(Ogre::SceneManager* mSceneMgr, float length);
 
 	static void randomlyFillRegionOfPolyVoxVolume(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Vector3DInt32& begin, PolyVox::Vector3DInt32& end, int maxHeight);
 
 	static void fillRegion(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Region& region);
-	static void loadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
-	static void unloadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
+
+	/*
+	static void extractMeshFromRegion(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh);
+	*/
+
 
     /* USAGE EXAMPLE:
 	 * Ogre::MeshPtr mesh = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE)->getMesh();

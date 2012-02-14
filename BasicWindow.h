@@ -23,15 +23,9 @@
 #include <RendererModules/Ogre/CEGUIOgreRenderer.h>
 // other:
 #include "Utils.h"
-#include "Perlin.h"
 #include <ostream>
-// polyvox:
-#include "PolyVoxCore/MaterialDensityPair.h"
-#include "PolyVoxCore/CubicSurfaceExtractorWithNormals.h"
-#include "PolyVoxCore/SurfaceMesh.h"
-#include "PolyVoxCore/SimpleVolume.h"
-#include <PolyVoxCore/LargeVolume.h>
-#include <PolyVoxCore/Material.h>
+#include <cassert>
+
 
 class BasicWindow : public Ogre::WindowEventListener, public Ogre::FrameListener, public OIS::KeyListener, public OIS::MouseListener {
 public:
@@ -72,10 +66,14 @@ protected:
 
 	// scene:
 	virtual void createScene(void);
+	virtual void addAxesLines(float length);
 
 	// gui:
 	virtual void createGUI(void);
 	virtual bool quit(const CEGUI::EventArgs& evt);
+	virtual bool isMouseOverGUI(void);
+	virtual CEGUI::MouseButton BasicWindow::convertMouseButton(OIS::MouseButtonID id);
+
 
 };
 
