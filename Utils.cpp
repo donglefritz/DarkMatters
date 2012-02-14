@@ -34,50 +34,52 @@ float Utils::distanceBetween(int p1_x, int p1_y, int p1_z, int p2_x, int p2_y, i
 	return sqrtf(x+y+z);
 }
 
-Ogre::ManualObject* Utils::polyVoxMeshToOgreObject(Ogre::SceneManager* mSceneMgr, PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh) {
-      Ogre::ManualObject* mo = NULL;
+// PolyVox => OGRE
+void Utils::polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh,Ogre::ManualObject* mo) {
+	// make sure mesh is allocated and valid first:
+	if (mesh == NULL || mesh->getNoOfVertices() < 1) {
+		log("ERROR: Utils::polyVoxMeshToOgreObject() got a mesh with no data.");
+		return;
+	} else if (mesh->getNoOfIndices() < 1) {
+		log("ERROR: Utils::polyVoxMeshToOgreObject() got a mesh with no indices.");
+		return;
+	}
 
-	  // make sure mesh is allocated and valid first:
-      if(mesh && mesh->getNoOfVertices() > 0 && mesh->getNoOfIndices() > 0) {   
+	const std::vector<uint32_t>& indices                         = mesh->getIndices();
+	const std::vector<PolyVox::PositionMaterialNormal>& vertices = mesh->getVertices();
 
-         const std::vector<uint32_t>& indices                         = mesh->getIndices();
-         const std::vector<PolyVox::PositionMaterialNormal>& vertices = mesh->getVertices();
+	uint32_t numIndices  = mesh->getNoOfIndices();
+	uint32_t numVertices = mesh->getNoOfVertices();
 
-         mo = mSceneMgr->createManualObject();
+	mo->estimateIndexCount(numIndices);
+	mo->estimateVertexCount(numVertices);
 
-         uint32_t numIndices  = mesh->getNoOfIndices();
-         uint32_t numVertices = mesh->getNoOfVertices();
+	mo->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
 
-         mo->estimateIndexCount(numIndices);
-         mo->estimateVertexCount(numVertices);
+	PolyVox::Vector3DFloat position;
+	PolyVox::Vector3DFloat normal;
+	float material;
+	int textureIndex = 0;
+	const Ogre::Vector2 texCoords[4] = { Ogre::Vector2(0.0f, 1.0f), Ogre::Vector2(1.0f, 1.0f), Ogre::Vector2(0.0f, 0.0f), Ogre::Vector2(1.0f, 0.0f) };
 
-         mo->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_LIST);
-
-         PolyVox::Vector3DFloat position;
-		 PolyVox::Vector3DFloat normal;
-		 float material;
-		 int textureIndex = 0;
-		 const Ogre::Vector2 texCoords[4] = { Ogre::Vector2(0.0f, 1.0f), Ogre::Vector2(1.0f, 1.0f), Ogre::Vector2(0.0f, 0.0f), Ogre::Vector2(1.0f, 0.0f) };
-
-         for(unsigned int i=0; i<numVertices; ++i) {
-            position = vertices[i].getPosition();
-			normal   = vertices[i].getNormal();
-			material = vertices[i].getMaterial();
+	// vertices:
+	for(unsigned int i=0; i<numVertices; ++i) {
+	position = vertices[i].getPosition();
+	normal   = vertices[i].getNormal();
+	material = vertices[i].getMaterial();
             
-			mo->position((Ogre::Real)(position.getX()), (Ogre::Real)(position.getY()), (Ogre::Real)(position.getZ()));
-			mo->normal(  (Ogre::Real)(normal.getX()),   (Ogre::Real)(normal.getY()),   (Ogre::Real)(normal.getZ()));
-			mo->textureCoord(texCoords[textureIndex++ % 4]);
-         }
+	mo->position((Ogre::Real)(position.getX()), (Ogre::Real)(position.getY()), (Ogre::Real)(position.getZ()));
+	mo->normal(  (Ogre::Real)(normal.getX()),   (Ogre::Real)(normal.getY()),   (Ogre::Real)(normal.getZ()));
+	mo->textureCoord(texCoords[textureIndex++ % 4]);
+	}
 
-         for(unsigned int i = 0 ; i < numIndices ; i++) {
-            mo->index((Ogre::uint32)(indices[i]));
-         }
+	// indices:
+	for(unsigned int i = 0 ; i < numIndices ; i++) {
+	mo->index((Ogre::uint32)(indices[i]));
+	}
+	mo->end();
 
-         mo->end();
-      }
-
-      return mo;
-   }
+}
 
 void Utils::createSphereInPolyVoxVolume(PolyVox::SimpleVolume<PolyVox::MaterialDensityPair44>& volData, float radius) {
         PolyVox::Vector3DFloat center(volData.getWidth() / 2.0f, volData.getHeight() / 2.0f, volData.getDepth()/2.0f);
@@ -105,30 +107,51 @@ void Utils::createSphereInPolyVoxVolume(PolyVox::SimpleVolume<PolyVox::MaterialD
         }
 }
 
-void Utils::randomlyFillRegionOfPolyVoxVolume(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Vector3DInt32& begin, PolyVox::Vector3DInt32& end, int maxHeight) {
-    PolyVox::Vector3DFloat center(volData.getWidth() / 2.0f, volData.getHeight() / 2.0f, volData.getDepth()/2.0f);
-    for (int x=begin.getX(); x<end.getX(); x++) {
-		for (int z=begin.getZ(); z<end.getZ(); z++) {
-			for (int y=Utils::randomInt(maxHeight)+1; y>0; --y) {
-				uint8_t material = 15;		
+
+void Utils::fillRegion(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Region& region) {	
+	std::stringstream ss;
+	ss << "Info: fillRegion() is filling region: " << region.getLowerCorner() << " -> " << region.getUpperCorner();
+	Utils::log(ss.str());
+	for (int x=region.getLowerCorner().getX(); x<region.getUpperCorner().getX(); x++) {
+		for (int y=region.getLowerCorner().getY(); y<region.getUpperCorner().getY(); ++y) {
+			for (int z=region.getLowerCorner().getZ(); z<region.getUpperCorner().getZ(); z++) {
+				uint8_t material = 2;		
 				PolyVox::Material8 voxel = volData.getVoxelAt(x,y,z);
 				voxel.setMaterial(material);
-                volData.setVoxelAt(x, y, z, voxel);
+                volData.setVoxelAt(x,y,z, voxel);
+            }
+        }
+    }
+	PolyVox::Material8 voxel = volData.getVoxelAt(0,0,0);
+	uint8_t material = voxel.getMaterial();
+}
+
+void Utils::loadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region) {
+	///		//This function is being called because part of the data is missing from memory and needs to be supplied. The parameter
+	///		//'volume' provides access to the volume data, and the parameter 'reg' indicates which region of the volume you need fill.	
+	std::stringstream ss;
+	ss << "Info: loadRegion() is loading region: " << region.getLowerCorner() << " -> " << region.getUpperCorner();
+	Utils::log(ss.str());
+	for (int x=region.getLowerCorner().getX(); x<region.getUpperCorner().getX(); x++) {
+		for (int y=region.getLowerCorner().getY(); y<region.getUpperCorner().getY(); ++y) {
+			for (int z=region.getLowerCorner().getZ(); z<region.getUpperCorner().getZ(); z++) {
+				uint8_t material = 2;		
+				if (Utils::randomBool()) {
+					PolyVox::Material8 voxel = volData.getVoxelAt(x,y,z);
+					voxel.setMaterial(material);
+					volData.setVoxelAt(x,y,z, voxel);
+				}
             }
         }
     }
 }
 
-void Utils::infiniteRegionHandler(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region) {
-	///		//This function is being called because part of the data is missing from memory and needs to be supplied. The parameter
-	///		//'volume' provides access to the volume data, and the parameter 'reg' indicates which region of the volume you need fill.	
-	//int maxHeight = 100;
-	//randomlyFillRegionOfPolyVoxVolume(volData, region.getLowerCorner(), region.getUpperCorner(), maxHeight);
-}
-
-void Utils::myDataOverflowHandler(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region) {
+void Utils::unloadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region) {
 	///		//This function is being called because part of the data is about to be removed from memory. The parameter 'volume' 
 	///		//provides access to the volume data, and the parameter 'reg' indicates which region of the volume you need to store.
+	std::stringstream ss;
+	ss << "Info: unloadRegion() is unloading region: " << region.getLowerCorner() << " -> " << region.getUpperCorner();
+	Utils::log(ss.str());
 }
 
 

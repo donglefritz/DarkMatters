@@ -36,15 +36,16 @@ public:
 
 	static void log(Ogre::String msg);
 	static CEGUI::MouseButton convertMouseButton(OIS::MouseButtonID id);
-	static Ogre::ManualObject* polyVoxMeshToOgreObject(Ogre::SceneManager* mSceneMgr, PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh);
+	static void polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh,Ogre::ManualObject* mo);
 	static void createSphereInPolyVoxVolume(PolyVox::SimpleVolume<PolyVox::MaterialDensityPair44>& volData, float radius);
 	static bool isMouseOverGUI(void);
 	static void addAxesLines(Ogre::SceneManager* mSceneMgr, float length);
 
 	static void randomlyFillRegionOfPolyVoxVolume(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Vector3DInt32& begin, PolyVox::Vector3DInt32& end, int maxHeight);
 
-	static void infiniteRegionHandler(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
-	static void myDataOverflowHandler(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
+	static void fillRegion(PolyVox::LargeVolume<PolyVox::Material8>& volData, PolyVox::Region& region);
+	static void loadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
+	static void unloadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
 
     /* USAGE EXAMPLE:
 	 * Ogre::MeshPtr mesh = mSceneMgr->createEntity(Ogre::SceneManager::PT_CUBE)->getMesh();

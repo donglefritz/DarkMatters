@@ -1,0 +1,9 @@
+material Skull {
+  technique {
+    pass {
+      texture_unit {
+        texture skull.jpg
+      }
+    }
+  }
+}

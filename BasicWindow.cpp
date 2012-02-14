@@ -203,9 +203,11 @@ void BasicWindow::createGUI(void) {
 }
 
 void BasicWindow::createScene(void) {
-	mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f,1.0f,1.0f));
-	//mSceneMgr->setAmbientLight(Ogre::ColourValue(0,0,0,0));
+	// center marker:
+	Utils::addAxesLines(mSceneMgr, 50);
 
+	// lights:
+	mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f,1.0f,1.0f));
 	Ogre::Light* cameraLight = mSceneMgr->createLight("cameraLight");
 	mCameraNode->attachObject(cameraLight);
 	cameraLight->setType(Ogre::Light::LT_SPOTLIGHT);
@@ -213,16 +215,31 @@ void BasicWindow::createScene(void) {
 	cameraLight->setSpecularColour(Ogre::ColourValue::Blue);
 	cameraLight->setSpotlightRange(Ogre::Degree(35), Ogre::Degree(50));
 
-	Utils::addAxesLines(mSceneMgr, 50);
-
-
-
-	// POLYVOX:
-
-	// create large volume:
-	PolyVox::LargeVolume<PolyVox::Material8> volData(&load, &unload, 256);
+	// PolyVox:
+	int size = 32;
+	int view = 8;
+	PolyVox::Region region(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(view, view, view));
+	PolyVox::LargeVolume<PolyVox::Material8> volData(&Utils::loadRegion, &Utils::unloadRegion, size);
 	volData.setMaxNumberOfBlocksInMemory(4096);
 	volData.setMaxNumberOfUncompressedBlocks(64);
+	Utils::fillRegion(volData, region);
+
+	PolyVox::Material8 voxel = volData.getVoxelAt(0,0,0);
+	
+	PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal> mesh;
+	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::LargeVolume,PolyVox::Material8> surfaceExtractor(&volData, region, &mesh);
+	surfaceExtractor.execute();
+
+	// OGRE:
+	Ogre::ManualObject* mo = mSceneMgr->createManualObject();
+	Utils::polyVoxMeshToOgreObject(&mesh, mo);
+	mo->convertToMesh("volDataMesh");
+	Ogre::Entity* entity   = mSceneMgr->createEntity("volDataMesh");
+	Ogre::SceneNode* node  = mSceneMgr->getRootSceneNode()->createChildSceneNode();
+	node->attachObject(entity);
+	entity->setMaterialName("Skull");
+	//node->scale(10, 10, 10);
+
 
 
 	// testing the volume:
@@ -251,29 +268,21 @@ void BasicWindow::createScene(void) {
 	ss << "DEBUG: Compression ratio: 1 to " << (1.0/(volData.calculateCompressionRatio())) << std::endl;
 	*/
 
+
 	// extract the surface
 
-	PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal> mesh;
+	//std::stringstream ss;
+	//ss << "DEBUG: # vertices in extracted mesh: " << mesh.getNoOfVertices();
+	//Utils::log(ss.str());	
 
-	// WTF POLYVOX???????????????????????????????
 	// WORKS: PolyVox::Region reg(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(255,255,255));
 	// PUKES: PolyVox::Region reg(PolyVox::Vector3DInt32(1,1,1), PolyVox::Vector3DInt32(31,31,31));
 
-	PolyVox::Region reg(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(255,255,255));
-	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::LargeVolume,PolyVox::Material8> surfaceExtractor(&volData, reg, &mesh);
-	surfaceExtractor.execute();
 
-	std::stringstream ss;
-	ss << "DEBUG: # vertices in extracted mesh: " << mesh.getNoOfVertices();
-	Utils::log(ss.str());
 
-	// OGRE:
-	Utils::polyVoxMeshToOgreObject(mSceneMgr, &mesh)->convertToMesh("volDataMesh");
-	Ogre::Entity* entity  = mSceneMgr->createEntity("volDataMesh");
-	Ogre::SceneNode* node = mSceneMgr->getRootSceneNode()->createChildSceneNode();
-	node->attachObject(entity);
-	entity->setMaterialName("Leaf");
-	node->scale(10, 10, 10);
+
+
+
 	// save mesh to file:
     //Ogre::MeshSerializer meshSerializer;
     //meshSerializer.exportMesh(largeMoMesh.getPointer(), "largePerlinNoise.mesh");
@@ -310,7 +319,7 @@ void BasicWindow::createScene(void) {
 	largeVolData.setMaxNumberOfBlocksInMemory(cubedMaxInMemory*cubedMaxInMemory*cubedMaxInMemory);
 
 	int maxHeight = 8;
-	Utils::randomlyFillRegionOfPolyVoxVolume(largeVolData, begin, end, maxHeight);
+	
 	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::LargeVolume,PolyVox::Material8> largeExtractor(&largeVolData, viewable, &largePolyMesh);
 	largeExtractor.execute();
 
@@ -327,10 +336,6 @@ void BasicWindow::createScene(void) {
 }
 
 // CALLBACKS:
-
-
-
-
 
 bool BasicWindow::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	if (mWindow->isClosed() || mShutDown) { return false; }
