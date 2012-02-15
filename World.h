@@ -3,6 +3,7 @@
 
 #include "basicwindow.h"
 #include "Perlin.h"
+#include "Shape.h"
 #include "PolyVoxCore/MaterialDensityPair.h"
 #include "PolyVoxCore/CubicSurfaceExtractorWithNormals.h"
 #include "PolyVoxCore/SurfaceMesh.h"
@@ -10,16 +11,19 @@
 #include <PolyVoxCore/LargeVolume.h>
 #include <PolyVoxCore/Material.h>
 
+
 class World : public BasicWindow {
 public:
 	World(void);
 	~World(void);
 
-
 protected:
 	uint16_t mChunkSize;
 	PolyVox::LargeVolume<PolyVox::Material8>* mWorldData;
 	PolyVox::Vector3DInt32 mViewableBoundary;
+	enum { NUM_SHAPES = 4 };
+	Shape* mShapes[NUM_SHAPES];
+	int mCurrentShapeIndex;
 
 	virtual void createScene(void);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);

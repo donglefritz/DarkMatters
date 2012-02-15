@@ -338,6 +338,12 @@ bool BasicWindow::keyPressed(const OIS::KeyEvent& evt) {
 	case OIS::KC_HOME:
 		mCamera->setPosition(Ogre::Vector3(0,0,5));
 		break;
+	case OIS::KC_PGUP:
+		mCamera->setPosition(mCamera->getPosition()+Ogre::Vector3(5,0,0));
+		break;
+	case OIS::KC_PGDOWN:
+		mCamera->setPosition(mCamera->getPosition()+Ogre::Vector3(-5,0,0));
+		break;
 	// TODO: catch and send slash commands to GUI console
 	// TODO: handle Enter key (submit current action to gui, ex: slash commands)
 	default:

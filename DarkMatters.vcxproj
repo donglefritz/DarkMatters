@@ -66,6 +66,7 @@
   <ItemGroup>
     <ClInclude Include="BasicWindow.h" />
     <ClInclude Include="Perlin.h" />
+    <ClInclude Include="Shape.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
@@ -74,6 +75,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Perlin.cpp" />
     <ClCompile Include="ProjectFiles\old_code_examples.cpp" />
+    <ClCompile Include="Shape.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
