@@ -20,10 +20,8 @@ public:
 protected:
 	uint16_t mChunkSize;
 	PolyVox::LargeVolume<PolyVox::Material8>* mWorldData;
-	PolyVox::Vector3DInt32 mViewableBoundary;
-	enum { NUM_SHAPES = 4 };
-	Shape* mShapes[NUM_SHAPES];
-	int mNextShapeIndex;
+	Ogre::Vector3  mCrntCamPos;
+	Ogre::Vector3  mLastCamPos;
 
 	virtual void createScene(void);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);

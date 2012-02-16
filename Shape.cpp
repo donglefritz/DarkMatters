@@ -17,11 +17,20 @@ Ogre::Vector3 Shape::getCenter(void) {
 	return mEntity->getWorldBoundingBox().getCenter();
 }
 
-void Shape::desc(void) {
+Ogre::Vector3 Shape::getPosition(void) {
+	return mSceneNode->getPosition();
+}
+
+void Shape::descToLog(void) {
 	float cx = getCenter().x;
 	float cy = getCenter().y;
 	float cz = getCenter().z;
+	float px = getPosition().x;
+	float py = getPosition().y;
+	float pz = getPosition().z;
 	std::stringstream ss;
-	ss << "SHAPE: entName: " << mEntity->getName() << " nodeName: " << mSceneNode->getName() << " center: " << cx <<","<< cy <<","<< cz;
+	ss << "SHAPE: entName: " << mEntity->getName() << " nodeName: " << mSceneNode->getName();
+	ss << " center: " << cx <<","<< cy <<","<< cz;
+	ss << " position: "<<px <<","<< py <<","<< pz;
 	Utils::log(ss.str());
 }

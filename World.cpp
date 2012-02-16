@@ -1,22 +1,15 @@
 #include "World.h"
 
 
-World::World(void) : BasicWindow(), mChunkSize(32), mWorldData(0), mViewableBoundary(8,8,8), mNextShapeIndex(0) {
+World::World(void) : BasicWindow(), mChunkSize(32), mWorldData(0) {
 	mWorldData = new PolyVox::LargeVolume<PolyVox::Material8>(&loadRegion, &unloadRegion, mChunkSize);
 	mWorldData->setMaxNumberOfBlocksInMemory(4096);
 	mWorldData->setMaxNumberOfUncompressedBlocks(32);
-
-
 }
 
 World::~World(void) {
 	if (mWorldData != NULL) {
 		delete mWorldData;
-	}
-	for (int i=0; i<NUM_SHAPES; ++i) {
-		if (mShapes[i] != NULL) {
-			delete mShapes[i];
-		}
 	}
 }
 
@@ -24,6 +17,50 @@ void World::createScene(void) {
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f,1.0f,1.0f));
 	addAxesLines(50);
 
+
+	int size   = 6;
+	int depth  = 8;
+	int count  = 0;
+	int offset = -(size*depth); 
+
+	Ogre::Entity* entity;
+	Ogre::SceneNode* node;
+	std::stringstream name;
+
+	for (int xx=0; xx<depth; ++xx) {
+		for (int zz=0; zz<depth; ++zz) {
+			int x = size * xx;
+			int z = size * zz;
+			name.str("");
+			name << "entity" << count;
+			Ogre::String entityName = name.str();
+			entity = mSceneMgr->createEntity(name.str(), "TwoBySixBlock.mesh");
+			name.str("");
+			name << "node" << count;
+			Ogre::String nodeName = name.str();
+			node   = mSceneMgr->getRootSceneNode()->createChildSceneNode(name.str());
+			node->attachObject(entity);
+			node->translate(x+offset, 0, z+offset);
+			if (xx%2==0) {
+				if (count%2==0) {
+					entity->setMaterialName("BlackBorder");
+				} else {
+					entity->setMaterialName("Skull");
+				}
+			} else {
+				if (count%2==0) {
+					entity->setMaterialName("Skull");
+				} else {
+					entity->setMaterialName("BlackBorder");
+				}
+			}
+			count++;
+		}
+	}
+
+
+
+	/*
 	Ogre::Entity* entity;
 	Ogre::SceneNode* node;
 	std::stringstream name;
@@ -37,14 +74,15 @@ void World::createScene(void) {
 		Ogre::String nodeName = name.str();
 		node   = mSceneMgr->getRootSceneNode()->createChildSceneNode(name.str());
 		node->attachObject(entity);
-		node->translate(0, (float)10*i, 0);
-		mShapes[i] = new Shape(node, entity);
+		node->translate((float), 0, 0);
 		if (i%2==0) {
 			entity->setMaterialName("BlackBorder");
 		} else {
 			entity->setMaterialName("Skull");
 		}
 	}
+
+	*/
 
 	/*
 	//PolyVox::Region region(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(8,8,8));
@@ -72,75 +110,21 @@ void World::createScene(void) {
 
 bool World::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	if (!BasicWindow::frameRenderingQueued(evt)) { return false; }
-
-	int shapeLength = 8;
-	int maxDist     = 6;
-	
-	static Ogre::Vector3 lastCameraPos(Ogre::Vector3::ZERO);
-	static Ogre::Vector3 lastShapePos(Ogre::Vector3::ZERO);
-
-	Ogre::Vector3 crntCameraPos = mCamera->getPosition();
-	Ogre::Vector3 cameraDiff    = crntCameraPos - lastCameraPos;
-	
-	if (abs(cameraDiff.x) < maxDist) { return true; }
-
-	Ogre::Vector3 nextShapePos = lastShapePos;
-
-	if (cameraDiff.x < 0) {
-		nextShapePos.x -= shapeLength;
-	} else {
-		nextShapePos.x += shapeLength;
-	}
-
-	Shape* shape = mShapes[mNextShapeIndex];
-	shape->mSceneNode->setPosition(nextShapePos);
-
-	// reset:
-	lastCameraPos   = crntCameraPos;
-	lastShapePos    = nextShapePos;
-	mNextShapeIndex = (mNextShapeIndex+1) % NUM_SHAPES;
-
-
-
-
 	/*
-	Ogre::Vector3 pos         = mCamera->getPosition();
-	Shape* crntShape          = mShapes[mCurrentShapeIndex];
-	Ogre::Vector3 shapePos    = crntShape->mSceneNode->getPosition();
+	static Ogre::Vector3 lastCamPos(Ogre::Vector3::ZERO);
 
-	float dist_x = pos.x - crntShape->getCenter().x;
+	int shapeLength       = 7;
+	float maxDist         = shapeLength * 0.51;
+	Ogre::Vector3 camPos  = mCamera->getPosition();
+	Ogre::Vector3 camDiff = camPos - lastCamPos;
+	float absDiffX        = abs(camDiff.x);
+	float absDiffZ        = abs(camDiff.z);
 
-	bool addShape   = false;
-	int shapeLength = 8;
-	int maxDist     = 6;
-	int absDist     = (int)abs(dist_x);
-	Ogre::Vector3 nextPos(0,0,0);
-	
+	if (lastCamPos == camPos || (absDiffX < maxDist && absDiffZ < maxDist) { return true; }
 
-
-	// left:
-	if (dist_x < 0) {
-		if (absDist > maxDist) {
-			nextPos.x -= shapeLength;
-			addShape = true;
-		}
-	}
-
-	if (addShape) {
-		mCurrentShapeIndex = (mCurrentShapeIndex+1) % NUM_SHAPES;
-		Shape* nextShape   = mShapes[mCurrentShapeIndex];
-		nextShape->mSceneNode->setPosition(nextPos);
-
-		std::stringstream ss;
-		ss << "DEBUG: pos.x: "<< pos.x <<" dist_x: "<< dist_x <<" absDist: "<< absDist <<" maxDist: "<< maxDist <<" shapeLength: "<< shapeLength;
-		Utils::log(ss.str());
-		Utils::log("       last shape:");
-		crntShape->desc();
-		Utils::log("       added shape:");
-		nextShape->desc();
-	}
 	*/
-		
+ 
+
 
 	return true;
 }

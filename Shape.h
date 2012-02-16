@@ -17,8 +17,9 @@ public:
 	Ogre::Entity*    mEntity;
 	Ogre::SceneNode* mSceneNode;
 
-	void desc(void);
+	void descToLog(void);
 	Ogre::Vector3 getCenter(void);
+	Ogre::Vector3 getPosition(void);
 };
 
 #endif
