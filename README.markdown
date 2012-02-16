@@ -9,11 +9,15 @@ Requirements:
 
 Controls:
 
-  * Move with W,S,A,D or arrow keys. 
+  * Free movement (fly) with W,S,A,D or arrow keys. 
+  * Use NUMPAD arrows to move in a direction incrementally.
+  * Use PAGEUP to move up incrementally.
+  * Use PAGEDOWN to move down incrementally.
   * Hold right mouse to move camera.
-  * Lift click to assign keyboard to/from a gui window.
   * Hold SHIFT to move fast.
   * Press ESCAPE to quit.
   * Press HOME to get put near 0,0,0 (in case you get lost)
   * Press PRINTSCREEN/SYSRQ to take a screenshot
+  * Left click to assign keyboard to/from a gui window.
+
 

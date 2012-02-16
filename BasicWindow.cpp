@@ -328,6 +328,9 @@ void BasicWindow::windowClosed(Ogre::RenderWindow* rw) {
 }
 
 bool BasicWindow::keyPressed(const OIS::KeyEvent& evt) {
+
+	float moveAmount = 5;
+
 	switch(evt.key) {
 	case OIS::KC_ESCAPE:
 		mShutDown = true;
@@ -338,14 +341,24 @@ bool BasicWindow::keyPressed(const OIS::KeyEvent& evt) {
 	case OIS::KC_HOME:
 		mCamera->setPosition(Ogre::Vector3(0,0,5));
 		break;
-	case OIS::KC_PGUP:
-		mCamera->setPosition(mCamera->getPosition()+Ogre::Vector3(5,0,0));
+	case OIS::KC_NUMPAD8:	//<- in
+		mCamera->setPosition(mCamera->getPosition()+Ogre::Vector3(0,0,-moveAmount));
 		break;
-	case OIS::KC_PGDOWN:
-		mCamera->setPosition(mCamera->getPosition()+Ogre::Vector3(-5,0,0));
+	case OIS::KC_NUMPAD2:	//<- out
+		mCamera->setPosition(mCamera->getPosition()+Ogre::Vector3(0,0,moveAmount));
 		break;
-	// TODO: catch and send slash commands to GUI console
-	// TODO: handle Enter key (submit current action to gui, ex: slash commands)
+	case OIS::KC_NUMPAD4:	//<- left
+		mCamera->setPosition(mCamera->getPosition()+Ogre::Vector3(-moveAmount,0,0));
+		break;
+	case OIS::KC_NUMPAD6:	//<- right
+		mCamera->setPosition(mCamera->getPosition()+Ogre::Vector3(moveAmount,0,0));
+		break;
+	case OIS::KC_PGUP:		//<- up
+		mCamera->setPosition(mCamera->getPosition()+Ogre::Vector3(0,moveAmount,0));
+		break;
+	case OIS::KC_PGDOWN:	//<- down
+		mCamera->setPosition(mCamera->getPosition()+Ogre::Vector3(0,-moveAmount,0));
+		break;
 	default:
 		if (mSendKeyboardToGUI) {
 			CEGUI::System::getSingleton().injectKeyDown(evt.key);
