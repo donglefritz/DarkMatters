@@ -1,0 +1,9 @@
+material BlackBorder {
+  technique {
+    pass {
+      texture_unit {
+        texture BlackBorder.jpg
+      }
+    }
+  }
+}

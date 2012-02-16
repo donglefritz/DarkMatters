@@ -1,7 +1,7 @@
 #include "World.h"
 
 
-World::World(void) : BasicWindow(), mChunkSize(32), mWorldData(0), mViewableBoundary(8,8,8), mCurrentShapeIndex(0) {
+World::World(void) : BasicWindow(), mChunkSize(32), mWorldData(0), mViewableBoundary(8,8,8), mNextShapeIndex(0) {
 	mWorldData = new PolyVox::LargeVolume<PolyVox::Material8>(&loadRegion, &unloadRegion, mChunkSize);
 	mWorldData->setMaxNumberOfBlocksInMemory(4096);
 	mWorldData->setMaxNumberOfUncompressedBlocks(32);
@@ -73,6 +73,37 @@ void World::createScene(void) {
 bool World::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	if (!BasicWindow::frameRenderingQueued(evt)) { return false; }
 
+	int shapeLength = 8;
+	int maxDist     = 6;
+	
+	static Ogre::Vector3 lastCameraPos(Ogre::Vector3::ZERO);
+	static Ogre::Vector3 lastShapePos(Ogre::Vector3::ZERO);
+
+	Ogre::Vector3 crntCameraPos = mCamera->getPosition();
+	Ogre::Vector3 cameraDiff    = crntCameraPos - lastCameraPos;
+	
+	if (abs(cameraDiff.x) < maxDist) { return true; }
+
+	Ogre::Vector3 nextShapePos = lastShapePos;
+
+	if (cameraDiff.x < 0) {
+		nextShapePos.x -= shapeLength;
+	} else {
+		nextShapePos.x += shapeLength;
+	}
+
+	Shape* shape = mShapes[mNextShapeIndex];
+	shape->mSceneNode->setPosition(nextShapePos);
+
+	// reset:
+	lastCameraPos   = crntCameraPos;
+	lastShapePos    = nextShapePos;
+	mNextShapeIndex = (mNextShapeIndex+1) % NUM_SHAPES;
+
+
+
+
+	/*
 	Ogre::Vector3 pos         = mCamera->getPosition();
 	Shape* crntShape          = mShapes[mCurrentShapeIndex];
 	Ogre::Vector3 shapePos    = crntShape->mSceneNode->getPosition();
@@ -84,6 +115,8 @@ bool World::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	int maxDist     = 6;
 	int absDist     = (int)abs(dist_x);
 	Ogre::Vector3 nextPos(0,0,0);
+	
+
 
 	// left:
 	if (dist_x < 0) {
@@ -106,7 +139,7 @@ bool World::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 		Utils::log("       added shape:");
 		nextShape->desc();
 	}
-
+	*/
 		
 
 	return true;

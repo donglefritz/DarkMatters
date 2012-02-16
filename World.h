@@ -23,7 +23,7 @@ protected:
 	PolyVox::Vector3DInt32 mViewableBoundary;
 	enum { NUM_SHAPES = 4 };
 	Shape* mShapes[NUM_SHAPES];
-	int mCurrentShapeIndex;
+	int mNextShapeIndex;
 
 	virtual void createScene(void);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
