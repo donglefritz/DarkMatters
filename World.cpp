@@ -17,121 +17,41 @@ void World::createScene(void) {
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f,1.0f,1.0f));
 	addAxesLines(50);
 
+	mCamera->setPosition(90, 280, 535);
+	mCamera->pitch(Ogre::Degree(-30));
+	mCamera->yaw(Ogre::Degree(-15));
 
-	int size   = 6;
-	int depth  = 8;
-	int count  = 0;
-	int offset = -(size*depth); 
+	// animated robot:
+	mWalkSpeed = 35;
+	mDirection = Ogre::Vector3::ZERO;
+	Ogre::Vector3 startLoc(0, 0, 25);
+	mEntity = mSceneMgr->createEntity("Robot", "robot.mesh");
+	mNode   = mSceneMgr->getRootSceneNode()->createChildSceneNode("RobotNode", startLoc);
+	mNode->attachObject(mEntity);
 
-	Ogre::Entity* entity;
-	Ogre::SceneNode* node;
-	std::stringstream name;
+	mWalkList.push_back(Ogre::Vector3(550, 0, 50));
+	mWalkList.push_back(Ogre::Vector3(-100, 0, -200));
 
-	for (int xx=0; xx<depth; ++xx) {
-		for (int zz=0; zz<depth; ++zz) {
-			int x = size * xx;
-			int z = size * zz;
-			name.str("");
-			name << "entity" << count;
-			Ogre::String entityName = name.str();
-			entity = mSceneMgr->createEntity(name.str(), "TwoBySixBlock.mesh");
-			name.str("");
-			name << "node" << count;
-			Ogre::String nodeName = name.str();
-			node   = mSceneMgr->getRootSceneNode()->createChildSceneNode(name.str());
-			node->attachObject(entity);
-			node->translate(x+offset, 0, z+offset);
-			if (xx%2==0) {
-				if (count%2==0) {
-					entity->setMaterialName("BlackBorder");
-				} else {
-					entity->setMaterialName("Skull");
-				}
-			} else {
-				if (count%2==0) {
-					entity->setMaterialName("Skull");
-				} else {
-					entity->setMaterialName("BlackBorder");
-				}
-			}
-			count++;
-		}
-	}
+	mAnimationState = mEntity->getAnimationState("Idle");
+	mAnimationState->setLoop(true);
+	mAnimationState->setEnabled(true);
 
 
-
-	/*
-	Ogre::Entity* entity;
-	Ogre::SceneNode* node;
-	std::stringstream name;
-	for (int i=0; i<NUM_SHAPES; ++i) {
-		name.str("");
-		name << "entity" << i;
-		Ogre::String entityName = name.str();
-		entity = mSceneMgr->createEntity(name.str(), "TwoBySixBlock.mesh");
-		name.str("");
-		name << "node" << i;
-		Ogre::String nodeName = name.str();
-		node   = mSceneMgr->getRootSceneNode()->createChildSceneNode(name.str());
-		node->attachObject(entity);
-		node->translate((float), 0, 0);
-		if (i%2==0) {
-			entity->setMaterialName("BlackBorder");
-		} else {
-			entity->setMaterialName("Skull");
-		}
-	}
-
-	*/
-
-	/*
-	//PolyVox::Region region(PolyVox::Vector3DInt32(-255,0,0), PolyVox::Vector3DInt32(8,8,8));
-	//PolyVox::Region region(PolyVox::Vector3DInt32(-1,0,0), PolyVox::Vector3DInt32(8,8,8));
-	PolyVox::Region region(PolyVox::Vector3DInt32(0,0,0), PolyVox::Vector3DInt32(8,8,8));
-	PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal> mesh;
-	PolyVox::CubicSurfaceExtractorWithNormals<PolyVox::LargeVolume,PolyVox::Material8> surfaceExtractor(mWorldData, region, &mesh);
-	surfaceExtractor.execute();
-
-
-	Ogre::ManualObject* mo = mSceneMgr->createManualObject("mo");
-	Ogre::Vector3 offset   = Ogre::Vector3::ZERO;
-	polyVoxMeshToOgreObject(&mesh, mo);
-	Ogre::MeshPtr ogreMesh = mo->convertToMesh("worldMesh");
-	Ogre::Entity* entity   = mSceneMgr->createEntity("worldEntity","worldMesh");
-	Ogre::SceneNode* node  = mSceneMgr->getRootSceneNode()->createChildSceneNode("worldNode");
-	node->attachObject(entity);
-	entity->setMaterialName("BlackBorder");
-
-	// save mesh to file:
-    Ogre::MeshSerializer meshSerializer;
-    meshSerializer.exportMesh(ogreMesh.getPointer(), "TwoBySixBlock.mesh");
-	*/
 }
 
-bool World::frameRenderingQueued(const Ogre::FrameEvent& evt) {
-	if (!BasicWindow::frameRenderingQueued(evt)) { return false; }
-	/*
-	static Ogre::Vector3 lastCamPos(Ogre::Vector3::ZERO);
+bool World::nextLocation(void) {
+	if (mWalkList.empty()) { return false; }
 
-	int shapeLength       = 7;
-	float maxDist         = shapeLength * 0.51;
-	Ogre::Vector3 camPos  = mCamera->getPosition();
-	Ogre::Vector3 camDiff = camPos - lastCamPos;
-	float absDiffX        = abs(camDiff.x);
-	float absDiffZ        = abs(camDiff.z);
+	mDestination  = mWalkList.front();
+	mWalkList.pop_front();
 
-	if (lastCamPos == camPos || (absDiffX < maxDist && absDiffZ < maxDist) { return true; }
-
-	*/
- 
+	mDirection = mDestination - mNode->getPosition();
+	mDistance  = mDirection.normalise();
 
 
 	return true;
 }
 
-void World::extractRegionToOgreMesh(PolyVox::Region& region, Ogre::String meshName) {
-	// TODO: implement
-}
 
 void World::polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh,Ogre::ManualObject* mo) {
 	// make sure mesh is allocated and valid first:
@@ -180,6 +100,46 @@ void World::polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMateri
 }
 
 // CALLBACKS:
+
+bool World::frameRenderingQueued(const Ogre::FrameEvent& evt) {
+	if (!BasicWindow::frameRenderingQueued(evt)) { return false; }
+
+	// animated robot:
+	if (mDirection == Ogre::Vector3::ZERO) {
+		if (nextLocation()) {
+			mAnimationState = mEntity->getAnimationState("Walk");
+			mAnimationState->setLoop(true);
+			mAnimationState->setEnabled(true);
+		}
+	} else {
+		Ogre::Real move = mWalkSpeed * evt.timeSinceLastFrame;
+		mDistance -= move;
+		if (mDistance <= 0) {
+			mNode->setPosition(mDestination);
+			mDirection = Ogre::Vector3::ZERO;
+			if (!nextLocation()) {
+				mAnimationState = mEntity->getAnimationState("Idle");
+				mAnimationState->setLoop(true);
+				mAnimationState->setEnabled(true);
+			} else {
+				Ogre::Vector3 origFacing = Ogre::Vector3::UNIT_X;
+				Ogre::Vector3 nowFacing  = mNode->getOrientation() * origFacing;
+				// avoid divide by zero from rotate() on exactly 180 degrees:
+				if ((nowFacing.dotProduct(mDirection)+1) < 0.0001f) {
+					mNode->yaw(Ogre::Degree(180));
+				} else {
+					mNode->rotate(nowFacing.getRotationTo(mDirection));
+				}
+			}
+		} else {
+			mNode->translate(mDirection * move);
+		}
+	}
+
+
+	mAnimationState->addTime(evt.timeSinceLastFrame);
+	return true;
+}
 
 void World::loadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region) {
 	std::stringstream ss;

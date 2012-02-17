@@ -20,18 +20,25 @@ public:
 protected:
 	uint16_t mChunkSize;
 	PolyVox::LargeVolume<PolyVox::Material8>* mWorldData;
-	Ogre::Vector3  mCrntCamPos;
-	Ogre::Vector3  mLastCamPos;
 
 	virtual void createScene(void);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
-	virtual void extractRegionToOgreMesh(PolyVox::Region& region, Ogre::String meshName);
 	virtual void polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh,Ogre::ManualObject* mo);
 
-	// These must be static to retain callback context (or something like that :)
+	// These only work if static and I'm not exactly sure why (has to do with context);
 	static void loadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
 	static void unloadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
 
+	// intermediate ogre tutorial #1:
+	virtual bool nextLocation(void);
+	Ogre::Real                mDistance;
+	Ogre::Vector3             mDirection;
+	Ogre::Vector3             mDestination;
+	Ogre::AnimationState*     mAnimationState;
+	Ogre::Entity*             mEntity;
+	Ogre::SceneNode*          mNode;
+	std::deque<Ogre::Vector3> mWalkList;
+	Ogre::Real                mWalkSpeed;
 
 };
 
