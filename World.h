@@ -4,6 +4,7 @@
 #include "basicwindow.h"
 #include "Perlin.h"
 #include "Shape.h"
+#include "AnimatedShape.h"
 #include "PolyVoxCore/MaterialDensityPair.h"
 #include "PolyVoxCore/CubicSurfaceExtractorWithNormals.h"
 #include "PolyVoxCore/SurfaceMesh.h"
@@ -20,6 +21,7 @@ public:
 protected:
 	uint16_t mChunkSize;
 	PolyVox::LargeVolume<PolyVox::Material8>* mWorldData;
+	std::vector<AnimatedShape> mAnimatedShapes;
 
 	virtual void createScene(void);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
@@ -28,17 +30,6 @@ protected:
 	// These only work if static and I'm not exactly sure why (has to do with context);
 	static void loadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
 	static void unloadRegion(const PolyVox::ConstVolumeProxy<PolyVox::Material8>& volData, const PolyVox::Region& region);
-
-	// intermediate ogre tutorial #1:
-	virtual bool nextLocation(void);
-	Ogre::Real                mDistance;
-	Ogre::Vector3             mDirection;
-	Ogre::Vector3             mDestination;
-	Ogre::AnimationState*     mAnimationState;
-	Ogre::Entity*             mEntity;
-	Ogre::SceneNode*          mNode;
-	std::deque<Ogre::Vector3> mWalkList;
-	Ogre::Real                mWalkSpeed;
 
 };
 

@@ -17,40 +17,33 @@ void World::createScene(void) {
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f,1.0f,1.0f));
 	addAxesLines(50);
 
-	mCamera->setPosition(90, 280, 535);
-	mCamera->pitch(Ogre::Degree(-30));
-	mCamera->yaw(Ogre::Degree(-15));
+	int numRobots = 4;
+	std::stringstream name;
+	for (int i=0; i<numRobots; ++i) {
+		name.str("");
+		name << "robot" << i;
+		Ogre::Entity* entity = mSceneMgr->createEntity(name.str(), "robot.mesh");
+		name.str("");
+		name << "robotNode" << i;
+		Ogre::SceneNode* node = mSceneMgr->getRootSceneNode()->createChildSceneNode(name.str());
+		// TODO: Utils::randomVector3(minX, maxX...)
+		int x = Utils::randomInt(30) + 5;
+		int z = Utils::randomInt(30) + 5;
+		node->setPosition(Ogre::Vector3((float)x, 0, (float)z));
+		
+		AnimatedShape anim(node, entity);
+		for (int j=0; j<Utils::randomInt(4); ++j) {
+			int x = Utils::randomInt(30) + 5;
+			int z = Utils::randomInt(30) + 5;
+			anim.addLocation(Ogre::Vector3((float)x, 0, (float)z));
+		}
+		anim.startAnimation("Idle", true);
+		mAnimatedShapes.push_back(anim);
+	}
 
-	// animated robot:
-	mWalkSpeed = 35;
-	mDirection = Ogre::Vector3::ZERO;
-	Ogre::Vector3 startLoc(0, 0, 25);
-	mEntity = mSceneMgr->createEntity("Robot", "robot.mesh");
-	mNode   = mSceneMgr->getRootSceneNode()->createChildSceneNode("RobotNode", startLoc);
-	mNode->attachObject(mEntity);
-
-	mWalkList.push_back(Ogre::Vector3(550, 0, 50));
-	mWalkList.push_back(Ogre::Vector3(-100, 0, -200));
-
-	mAnimationState = mEntity->getAnimationState("Idle");
-	mAnimationState->setLoop(true);
-	mAnimationState->setEnabled(true);
-
-
-}
-
-bool World::nextLocation(void) {
-	if (mWalkList.empty()) { return false; }
-
-	mDestination  = mWalkList.front();
-	mWalkList.pop_front();
-
-	mDirection = mDestination - mNode->getPosition();
-	mDistance  = mDirection.normalise();
+}	
 
 
-	return true;
-}
 
 
 void World::polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMaterialNormal>* mesh,Ogre::ManualObject* mo) {
@@ -104,6 +97,7 @@ void World::polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMateri
 bool World::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	if (!BasicWindow::frameRenderingQueued(evt)) { return false; }
 
+	/*
 	// animated robot:
 	if (mDirection == Ogre::Vector3::ZERO) {
 		if (nextLocation()) {
@@ -121,23 +115,14 @@ bool World::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 				mAnimationState = mEntity->getAnimationState("Idle");
 				mAnimationState->setLoop(true);
 				mAnimationState->setEnabled(true);
-			} else {
-				Ogre::Vector3 origFacing = Ogre::Vector3::UNIT_X;
-				Ogre::Vector3 nowFacing  = mNode->getOrientation() * origFacing;
-				// avoid divide by zero from rotate() on exactly 180 degrees:
-				if ((nowFacing.dotProduct(mDirection)+1) < 0.0001f) {
-					mNode->yaw(Ogre::Degree(180));
-				} else {
-					mNode->rotate(nowFacing.getRotationTo(mDirection));
-				}
 			}
 		} else {
 			mNode->translate(mDirection * move);
 		}
 	}
 
-
 	mAnimationState->addTime(evt.timeSinceLastFrame);
+	*/
 	return true;
 }
 

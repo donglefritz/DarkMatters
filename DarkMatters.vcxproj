@@ -64,6 +64,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnimatedShape.h" />
     <ClInclude Include="BasicWindow.h" />
     <ClInclude Include="Perlin.h" />
     <ClInclude Include="Shape.h" />
@@ -71,6 +72,7 @@
     <ClInclude Include="World.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimatedShape.cpp" />
     <ClCompile Include="BasicWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Perlin.cpp" />
