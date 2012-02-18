@@ -5,12 +5,26 @@ Shape::Shape(void) {
 	mEntity    = NULL;
 }
 
-Shape::Shape(Ogre::SceneNode* sceneNode, Ogre::Entity* entity) {
+Shape::Shape(Ogre::SceneNode* sceneNode, Ogre::Entity* entity) : mOriginalDirection(Ogre::Vector3::UNIT_X) {
 	mSceneNode = sceneNode;
 	mEntity    = entity;
 }
 
 Shape::~Shape(void) {
+}
+
+
+void Shape::setOriginalDirection(Ogre::Vector3 direction) {
+	mOriginalDirection = direction;
+}
+
+void Shape::face(Ogre::Vector3 direction) {
+	Ogre::Vector3 nowFacing  = mSceneNode->getOrientation() * mOriginalDirection;
+	nowFacing.y = 0;
+	direction.y = 0;
+	nowFacing.normalise();
+	direction.normalise();
+	mSceneNode->rotate(nowFacing.getRotationTo(direction));
 }
 
 Ogre::Vector3 Shape::getCenter(void) {

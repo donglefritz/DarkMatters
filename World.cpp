@@ -26,16 +26,13 @@ void World::createScene(void) {
 		name.str("");
 		name << "robotNode" << i;
 		Ogre::SceneNode* node = mSceneMgr->getRootSceneNode()->createChildSceneNode(name.str());
-		// TODO: Utils::randomVector3(minX, maxX...)
-		int x = Utils::randomInt(30) + 5;
-		int z = Utils::randomInt(30) + 5;
-		node->setPosition(Ogre::Vector3((float)x, 0, (float)z));
+		node->attachObject(entity);
+
+		node->setPosition(Utils::randomFlatVector3(500,0));
 		
 		AnimatedShape anim(node, entity);
 		for (int j=0; j<Utils::randomInt(4); ++j) {
-			int x = Utils::randomInt(30) + 5;
-			int z = Utils::randomInt(30) + 5;
-			anim.addLocation(Ogre::Vector3((float)x, 0, (float)z));
+			anim.addLocation(Utils::randomFlatVector3(200,0));
 		}
 		anim.startAnimation("Idle", true);
 		mAnimatedShapes.push_back(anim);
@@ -97,32 +94,11 @@ void World::polyVoxMeshToOgreObject(PolyVox::SurfaceMesh<PolyVox::PositionMateri
 bool World::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	if (!BasicWindow::frameRenderingQueued(evt)) { return false; }
 
-	/*
-	// animated robot:
-	if (mDirection == Ogre::Vector3::ZERO) {
-		if (nextLocation()) {
-			mAnimationState = mEntity->getAnimationState("Walk");
-			mAnimationState->setLoop(true);
-			mAnimationState->setEnabled(true);
-		}
-	} else {
-		Ogre::Real move = mWalkSpeed * evt.timeSinceLastFrame;
-		mDistance -= move;
-		if (mDistance <= 0) {
-			mNode->setPosition(mDestination);
-			mDirection = Ogre::Vector3::ZERO;
-			if (!nextLocation()) {
-				mAnimationState = mEntity->getAnimationState("Idle");
-				mAnimationState->setLoop(true);
-				mAnimationState->setEnabled(true);
-			}
-		} else {
-			mNode->translate(mDirection * move);
-		}
+	for (int i=0; i<mAnimatedShapes.size(); ++i) {
+		mAnimatedShapes[i].moveTowardsNextLocation("Walk", "Idle", evt.timeSinceLastFrame);
+		mAnimatedShapes[i].addTime(evt.timeSinceLastFrame);
 	}
 
-	mAnimationState->addTime(evt.timeSinceLastFrame);
-	*/
 	return true;
 }
 

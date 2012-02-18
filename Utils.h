@@ -30,6 +30,8 @@ public:
 	static bool  randomBool(void);
 	static float randomFloat(void);
 	static int   randomInt(int excludedMax);
+	static Ogre::Vector3 randomVector3(int excludedMax);
+	static Ogre::Vector3 randomFlatVector3(int excludedMax, int yPlaneValue);
 	static float distanceBetween(Ogre::Vector3 p1, Ogre::Vector3 p2);
 	static float distanceBetween(int p1_x, int p1_y, int p1_z, int p2_x, int p2_y, int p2_z);
 

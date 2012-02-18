@@ -17,9 +17,15 @@ public:
 	Ogre::Entity*    mEntity;
 	Ogre::SceneNode* mSceneNode;
 
+
 	void descToLog(void);
+	void setOriginalDirection(Ogre::Vector3 direction);
+	void face(Ogre::Vector3 position);
 	Ogre::Vector3 getCenter(void);
 	Ogre::Vector3 getPosition(void);
+
+protected:
+	Ogre::Vector3  mOriginalDirection;
 };
 
 #endif

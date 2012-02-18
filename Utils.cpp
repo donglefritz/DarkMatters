@@ -19,6 +19,16 @@ int Utils::randomInt(int excludedMax) {
 	return rand() % excludedMax;
 }
 
+Ogre::Vector3 Utils::randomVector3(int max) {
+	return Ogre::Vector3((float)randomInt(max), (float)randomInt(max), (float)randomInt(max));
+}
+
+Ogre::Vector3 Utils::randomFlatVector3(int excludedMax, int yPlaneValue) {
+	Ogre::Vector3 vector = randomVector3(excludedMax);
+	vector.y = yPlaneValue;
+	return vector;
+}
+
 float Utils::distanceBetween(Ogre::Vector3 p1, Ogre::Vector3 p2) {
 	return distanceBetween((int)p1.x, (int)p1.y, (int)p1.z, (int)p2.x, (int)p2.y, (int)p2.z);
 }
