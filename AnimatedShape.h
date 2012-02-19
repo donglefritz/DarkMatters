@@ -9,10 +9,11 @@ public:
 	~AnimatedShape(void);
 
 	virtual void addLocation(Ogre::Vector3 location);
-	virtual bool useNextLocation(void);
 	virtual void startAnimation(Ogre::String animationName, bool shouldLoop);
-	virtual void addTime(Ogre::Real timeSinceLast);
-	virtual void moveTowardsNextLocation(Ogre::String movingAnim, Ogre::String idleAnim, Ogre::Real timeSinceLast);
+	virtual void tick(Ogre::Real timeSinceLast);
+	virtual void moveTowardsNextLocation(Ogre::Real timeSinceLast);
+	
+	void setAnimations(Ogre::String movementAnimName, Ogre::String idleAnimName);
 
 protected:
 	std::deque<Ogre::Vector3> mWalkList;
@@ -22,6 +23,10 @@ protected:
 	Ogre::Vector3             mDestination;
 	Ogre::AnimationState*     mAnimationState;
 	bool                      mMoving;
+	Ogre::String              mMovementAnimation;
+	Ogre::String              mIdleAnimation;
+
+	virtual bool useNextLocation(void);
 
 };
 

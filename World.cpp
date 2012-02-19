@@ -34,6 +34,7 @@ void World::createScene(void) {
 		for (int j=0; j<Utils::randomInt(4); ++j) {
 			anim.addLocation(Utils::randomFlatVector3(200,0));
 		}
+		anim.setAnimations("Walk", "Idle");
 		anim.startAnimation("Idle", true);
 		mAnimatedShapes.push_back(anim);
 	}
@@ -95,8 +96,7 @@ bool World::frameRenderingQueued(const Ogre::FrameEvent& evt) {
 	if (!BasicWindow::frameRenderingQueued(evt)) { return false; }
 
 	for (int i=0; i<mAnimatedShapes.size(); ++i) {
-		mAnimatedShapes[i].moveTowardsNextLocation("Walk", "Idle", evt.timeSinceLastFrame);
-		mAnimatedShapes[i].addTime(evt.timeSinceLastFrame);
+ 		mAnimatedShapes[i].tick(evt.timeSinceLastFrame);
 	}
 
 	return true;

@@ -7,8 +7,15 @@ AnimatedShape::AnimatedShape(Ogre::SceneNode* sceneNode, Ogre::Entity* entity) :
 AnimatedShape::~AnimatedShape(void) {
 }
 
-void AnimatedShape::addTime(Ogre::Real timeSinceLast) {
+void AnimatedShape::tick(Ogre::Real timeSinceLast) {
 	mAnimationState->addTime(timeSinceLast);
+	if (mWalkList.empty() && Utils::randomInt(1000)==1) {
+		for (int i=0; i<Utils::randomInt(5)+1; ++i) {
+			addLocation(Utils::randomFlatVector3(200, 0));
+		}
+	} else {
+		moveTowardsNextLocation(timeSinceLast);
+	}
 }
 
 void AnimatedShape::addLocation(Ogre::Vector3 location) {
@@ -25,7 +32,12 @@ bool AnimatedShape::useNextLocation(void) {
 	}
 }
 
-void AnimatedShape::moveTowardsNextLocation(Ogre::String movingAnim, Ogre::String idleAnim, Ogre::Real timeSinceLast) {
+void AnimatedShape::setAnimations(Ogre::String movementAnimName, Ogre::String idleAnimName) {
+	mMovementAnimation = movementAnimName;
+	mIdleAnimation     = idleAnimName;
+}
+
+void AnimatedShape::moveTowardsNextLocation(Ogre::Real timeSinceLast) {
 	mDirection = mDestination - mSceneNode->getPosition();
 	mDistance  = mDirection.normalise();
 
@@ -37,25 +49,16 @@ void AnimatedShape::moveTowardsNextLocation(Ogre::String movingAnim, Ogre::Strin
 		if (mDistance <= 0) {
 			mSceneNode->setPosition(mDestination);
 			mMoving = false;
-			startAnimation(idleAnim, true);
+			startAnimation(mIdleAnimation, true);
 		} else {
 			mSceneNode->translate(mDirection * moveAmount);
 		}
 	} else {
 		if (useNextLocation()) {
-			startAnimation(movingAnim, true);
+			startAnimation(mMovementAnimation, true);
 			mMoving = true;
 		}
 	}
-
-
-
-
-
-
-
-
-
 }
 
 void AnimatedShape::startAnimation(Ogre::String animationName, bool shouldLoop) {
